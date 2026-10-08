@@ -1,0 +1,17 @@
+diff --git a/features/app/finance-app.tsx b/features/app/finance-app.tsx
+--- a/features/app/finance-app.tsx
++++ b/features/app/finance-app.tsx
+@@ -40,5 +40,6 @@ import { reportPoints } from "@/lib/mock-data";
+ import { cn } from "@/lib/utils";
+ import { useFinanceStore } from "./use-finance-store";
++import { DashboardV2 } from "./dashboard-v2";
+ import type { TransactionType } from "@/types/finance";
+ 
+ type View = "dashboard" | "transactions" | "budget" | "savings" | "debt" | "reports" | "export" | "receipt" | "settings";
+@@ -76,5 +77,5 @@ export function FinanceApp() {
+         <DesktopSidebar active={view} onChange={setView} />
+         <section className="relative h-full min-h-0 overflow-hidden bg-transparent dark:bg-transparent">
+-          {view === "dashboard" && <DashboardScreen onNavigate={setView} />}
++          {view === "dashboard" && <DashboardV2 onAdd={() => setIsAddModalOpen(true)} onTransactions={() => setView("transactions")} />}
+           {view === "transactions" && <TransactionsScreen />}
+           {view === "budget" && <BudgetScreen />}

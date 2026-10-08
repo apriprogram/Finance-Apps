@@ -1,0 +1,66 @@
+CARA MENJALANKAN APLIKASI CATAT KEUANGAN
+==========================================
+
+Persyaratan:
+- Node.js sudah terpasang (disarankan versi 20 LTS).
+- Jalankan perintah melalui PowerShell atau Command Prompt.
+
+LANGKAH MENJALANKAN MODE PENGEMBANGAN
+
+1. Buka terminal di folder proyek:
+
+   cd "E:\GARUDANEXA\Catat Keuangan"
+
+2. Instal semua dependency (cukup dilakukan saat pertama kali atau setelah
+   package.json berubah):
+
+   npm install
+
+3. Jalankan aplikasi:
+
+   npm run dev
+
+4. Setelah muncul informasi bahwa server sudah siap, buka alamat berikut
+   melalui browser:
+
+   http://localhost:3000
+
+5. Untuk menghentikan aplikasi, kembali ke terminal lalu tekan:
+
+   Ctrl + C
+
+CATATAN KONFIGURASI DATABASE/SUPABASE (OPSIONAL)
+
+Aplikasi saat ini dapat menampilkan data contoh. Jika ingin menggunakan
+database PostgreSQL/Supabase:
+
+1. Salin file .env.example menjadi .env.local:
+
+   Copy-Item .env.example .env.local
+
+2. Isi DATABASE_URL, NEXT_PUBLIC_SUPABASE_URL, dan
+   NEXT_PUBLIC_SUPABASE_ANON_KEY di dalam file .env.local.
+
+3. Siapkan Prisma:
+
+   npx prisma generate
+   npx prisma migrate dev
+
+4. Jalankan kembali aplikasi:
+
+   npm run dev
+
+MODE PRODUKSI
+
+Untuk menguji aplikasi dalam mode produksi, jalankan:
+
+   npm run build
+   npm run start
+
+Kemudian buka http://localhost:3000.
+
+Jika port 3000 sedang digunakan, jalankan aplikasi di port lain:
+
+   npm run dev -- -p 3001
+
+Kemudian buka http://localhost:3001.

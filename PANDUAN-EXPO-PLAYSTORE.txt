@@ -1,0 +1,93 @@
+CARA MENJALANKAN APLIKASI EXPO DAN MEMBUAT AAB
+================================================
+
+Lokasi aplikasi mobile:
+E:\GARUDANEXA\Catat Keuangan\mobile
+
+PERSYARATAN
+-----------
+1. Gunakan Node.js minimal 22.13.0. Node.js 22.12.0 yang saat ini terpasang
+   masih dapat menjalankan sebagian tools, tetapi berada di bawah versi yang
+   diminta React Native 0.86.
+2. Instal aplikasi Expo Go pada ponsel Android untuk pengujian cepat.
+3. Komputer dan ponsel sebaiknya terhubung ke jaringan Wi-Fi yang sama.
+
+MENJALANKAN APLIKASI DI EXPO GO
+-------------------------------
+1. Buka PowerShell.
+2. Masuk ke folder mobile:
+
+   cd "E:\GARUDANEXA\Catat Keuangan\mobile"
+
+3. Instal dependency jika belum tersedia:
+
+   npm install
+
+4. Jalankan Expo:
+
+   npm start
+
+5. Pindai kode QR yang muncul menggunakan Expo Go.
+
+Jika jaringan lokal tidak dapat terhubung, gunakan tunnel:
+
+   npx expo start --tunnel
+
+FITUR YANG SUDAH DISIAPKAN
+--------------------------
+- Dashboard mode gelap sesuai referensi.
+- Ringkasan saldo, pemasukan, dan pengeluaran.
+- Daftar transaksi harian.
+- Form tambah Pengeluaran dan Pemasukan.
+- Keypad nominal khusus.
+- Pilihan kategori yang berbeda untuk setiap jenis transaksi.
+- Pemilihan dompet dengan mengetuk kolom dompet.
+- Catatan maksimal 80 karakter.
+- Penyimpanan transaksi ke AsyncStorage perangkat.
+- Saldo dan ringkasan dashboard diperbarui setelah transaksi disimpan.
+- Package Android: com.garudanexa.catatkeuangan
+- Konfigurasi APK pengujian dan AAB Play Store di mobile/eas.json.
+
+MEMBUAT APK UNTUK PENGUJIAN
+---------------------------
+1. Masuk atau buat akun Expo:
+
+   npx eas-cli@latest login
+
+2. Hubungkan proyek ke EAS pada penggunaan pertama:
+
+   npx eas-cli@latest build:configure
+
+3. Buat APK pengujian:
+
+   npx eas-cli@latest build --platform android --profile preview
+
+MEMBUAT AAB UNTUK GOOGLE PLAY STORE
+-----------------------------------
+Jalankan:
+
+   npx eas-cli@latest build --platform android --profile production
+
+Profil production menghasilkan Android App Bundle (.aab). Nomor build akan
+bertambah secara otomatis sesuai konfigurasi eas.json.
+
+SEBELUM DIUNGGAH KE PLAY STORE
+------------------------------
+- Ganti icon dan splash bawaan di folder mobile/assets dengan logo final.
+- Pastikan package Android sudah benar sebelum rilis pertama. Package tidak
+  dapat diganti dengan mudah setelah aplikasi dipublikasikan.
+- Siapkan nama aplikasi, deskripsi, screenshot, feature graphic, kategori,
+  email dukungan, dan kebijakan privasi.
+- Hubungkan database Supabase sebelum menggunakan data pengguna sungguhan.
+- Tambahkan autentikasi dan fitur hapus akun/data jika akun pengguna digunakan.
+- Uji APK pada beberapa ukuran layar dan versi Android.
+
+PEMERIKSAAN KODE
+----------------
+Periksa TypeScript:
+
+   npx tsc --noEmit
+
+Uji pembuatan bundel Android:
+
+   npx expo export --platform android

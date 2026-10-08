@@ -1,0 +1,128 @@
+TOOLS DAN TEKNOLOGI APLIKASI CATAT KEUANGAN
+============================================
+
+Dokumen ini menjelaskan tools, framework, library, dan teknologi yang dipakai
+untuk membuat aplikasi Catat Keuangan.
+
+1. NODE.JS
+-----------
+Node.js adalah lingkungan untuk menjalankan JavaScript di komputer, di luar
+browser. Dalam proyek ini, Node.js dipakai untuk menjalankan server Next.js,
+memasang library, melakukan proses build, dan menjalankan tools pengembangan.
+
+2. NPM (NODE PACKAGE MANAGER)
+-----------------------------
+NPM digunakan untuk mengunduh dan mengelola semua dependency yang tercantum
+di package.json. Contoh perintahnya adalah npm install, npm run dev, dan
+npm run build.
+
+3. NEXT.JS 14
+-------------
+Next.js adalah framework utama aplikasi. Proyek ini memakai App Router yang
+terlihat dari folder app. Next.js mengatur halaman, layout, proses rendering,
+server pengembangan, optimasi font, serta pembuatan versi produksi aplikasi.
+
+File penting:
+- app/page.tsx   : halaman utama aplikasi.
+- app/layout.tsx : layout utama, metadata, dan font aplikasi.
+- next.config.mjs: konfigurasi Next.js.
+
+4. REACT 18
+-----------
+React digunakan untuk membangun antarmuka dari komponen-komponen yang dapat
+digunakan kembali. Contohnya adalah Button, Card, Field, Progress, dan Tabs.
+React juga menangani state tampilan dan interaksi pengguna melalui useState
+dan useEffect.
+
+5. TYPESCRIPT
+-------------
+TypeScript adalah JavaScript yang dilengkapi pemeriksaan tipe data. Teknologi
+ini membantu mengurangi kesalahan saat pengembangan, misalnya dengan memastikan
+data transaksi, dompet, anggaran, tabungan, dan hutang memiliki bentuk yang
+sesuai. Definisi tipe utama berada di types/finance.ts.
+
+6. TAILWIND CSS
+---------------
+Tailwind CSS dipakai untuk mengatur desain aplikasi melalui utility class.
+Dengan Tailwind, pengaturan warna, jarak, ukuran, responsivitas, dan tampilan
+mobile-first dapat ditulis langsung pada komponen. Pengaturannya berada di
+tailwind.config.ts, sedangkan CSS global berada di app/globals.css.
+
+7. POSTCSS DAN AUTOPREFIXER
+---------------------------
+PostCSS memproses CSS ketika aplikasi dibangun. Autoprefixer menambahkan prefix
+CSS yang diperlukan agar tampilan lebih kompatibel dengan berbagai browser.
+Konfigurasinya berada di postcss.config.js.
+
+8. ZUSTAND
+----------
+Zustand adalah library untuk mengelola state atau data aplikasi secara global.
+Dalam proyek ini, Zustand menyimpan data pengguna, dompet, transaksi, budget,
+tabungan, hutang, dan hasil scan. Middleware persist juga digunakan agar data
+tetap tersimpan di localStorage browser setelah halaman dimuat ulang.
+
+File utama: features/app/use-finance-store.ts.
+
+9. LUCIDE REACT
+---------------
+Lucide React menyediakan ikon untuk antarmuka, seperti ikon menu, dompet,
+transaksi, tabungan, laporan, tambah, edit, dan navigasi. Ikon berbentuk SVG,
+sehingga tetap tajam pada berbagai ukuran layar.
+
+10. CLSX
+--------
+Clsx membantu menyusun nama class CSS secara dinamis. Sebagai contoh, sebuah
+tombol dapat memperoleh class yang berbeda sesuai kondisi aktif, nonaktif,
+atau jenis tampilannya.
+
+11. TAILWIND-MERGE
+------------------
+Tailwind Merge menggabungkan class Tailwind dan menghapus class yang saling
+bertentangan. Library ini dipakai bersama clsx melalui fungsi cn yang berada
+di lib/utils.ts.
+
+12. PRISMA (RANCANGAN DATABASE)
+-------------------------------
+Prisma digunakan untuk mendefinisikan struktur database PostgreSQL. Skema pada
+prisma/schema.prisma berisi tabel pengguna, dompet, kategori, transaksi,
+budget, tabungan, hutang/piutang, hasil scan struk, dan riwayat ekspor.
+
+Catatan: paket Prisma belum tercantum di package.json saat dokumen ini dibuat.
+Artinya, skema database sudah disiapkan tetapi Prisma belum menjadi bagian
+aktif dari aplikasi yang sedang berjalan.
+
+13. POSTGRESQL DAN SUPABASE (INTEGRASI YANG DISIAPKAN)
+------------------------------------------------------
+PostgreSQL direncanakan sebagai database utama dan Supabase sebagai layanan
+backend/database. Variabel konfigurasinya sudah disediakan di .env.example,
+yaitu DATABASE_URL, NEXT_PUBLIC_SUPABASE_URL, dan
+NEXT_PUBLIC_SUPABASE_ANON_KEY.
+
+Catatan: tampilan aplikasi saat ini masih menggunakan data contoh dan state
+lokal. Koneksi Supabase tersedia sebagai persiapan di lib/supabase.ts, tetapi
+belum menjadi sumber data utama aplikasi.
+
+14. PRETTIER
+------------
+Prettier digunakan untuk merapikan format kode secara otomatis agar gaya
+penulisan konsisten. Perintah yang tersedia adalah npm run format.
+
+15. ESLINT
+----------
+ESLint membantu menemukan masalah pada kode JavaScript/TypeScript. Konfigurasi
+dasarnya berada di .eslintrc.json dan perintahnya adalah npm run lint.
+
+16. LOCALSTORAGE BROWSER
+------------------------
+LocalStorage adalah penyimpanan yang tersedia di browser. Aplikasi memakainya
+melalui Zustand persist agar perubahan data keuangan tidak langsung hilang
+ketika halaman di-refresh. Data ini hanya tersimpan pada browser/perangkat yang
+sedang digunakan dan bukan pengganti database online.
+
+RINGKASAN ALUR TEKNOLOGI
+------------------------
+Node.js dan NPM menjalankan proyek. Next.js dan React membangun aplikasi.
+TypeScript menjaga struktur data. Tailwind CSS mengatur tampilan. Zustand
+mengelola data aplikasi dan menyimpannya ke localStorage. Lucide React
+menyediakan ikon. Prisma, PostgreSQL, dan Supabase sudah disiapkan untuk tahap
+integrasi database berikutnya.

@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.env
+.env.local
+.env.*.local
+*.log
+*.tsbuildinfo
+.codex-preview-profile/
+.codex-chrome-profile/
+.codex-chrome-profile-2/
+preview-*.png
+mobile/dist-test/
+.DS_Store
+Thumbs.db

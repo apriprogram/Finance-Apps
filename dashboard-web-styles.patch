@@ -1,0 +1,43 @@
+diff --git a/app/globals.css b/app/globals.css
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -191,3 +191,34 @@ body,
+ .dark .app-gradient-bg::before {
+   background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.18) 0%, rgba(15, 23, 42, 0.08) 48%, transparent 72%);
+ }
++
++.dashboard-icon-button {
++  display: inline-flex;
++  width: 2.5rem;
++  height: 2.5rem;
++  flex: 0 0 auto;
++  align-items: center;
++  justify-content: center;
++  border-radius: 999px;
++  color: #57534e;
++  transition: color 180ms ease, background-color 180ms ease, transform 180ms ease;
++}
++
++.dashboard-icon-button:hover {
++  color: #1c1917;
++  background: rgba(28, 25, 23, 0.06);
++}
++
++.dashboard-icon-button:active { transform: scale(0.94); }
++.dark .dashboard-icon-button { color: #d6d3d1; }
++.dark .dashboard-icon-button:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
++
++.dashboard-theme-button {
++  display: inline-flex;
++  height: 2.5rem;
++  align-items: center;
++  gap: 0.4rem;
++  border-radius: 999px;
++  padding: 0 0.8rem;
++  color: white;
++  background: #ef4145;
++  font-size: 0.75rem;
++  font-weight: 700;
++  transition: transform 180ms ease, background-color 180ms ease;
++}
++.dashboard-theme-button:hover { background: #dc3539; transform: translateY(-1px); }
