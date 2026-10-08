@@ -66,6 +66,19 @@ import type { TransactionType } from "@/types/finance";
 type View = "dashboard" | "transactions" | "budget" | "wallets" | "savings" | "debt" | "reports" | "export" | "receipt" | "settings" | "profile";
 type Language = "id" | "en";
 
+const copy = (language: Language, indonesia: string, english: string) => language === "en" ? english : indonesia;
+const englishDataLabels: Record<string, string> = {
+  Makanan: "Food", Belanja: "Shopping", Hiburan: "Entertainment", Transportasi: "Transportation",
+  Tagihan: "Bills", Kesehatan: "Health", Pendidikan: "Education", Lainnya: "Other",
+  Gaji: "Salary", Bisnis: "Business", Freelance: "Freelance", Tabungan: "Savings", Hadiah: "Gift", Bonus: "Bonus", Investasi: "Investment",
+  "Gaji Bulanan": "Monthly Salary", "Belanja Bulanan": "Monthly Shopping", "Makan Siang": "Lunch",
+  "Pulsa Internet": "Mobile Data", Kopi: "Coffee", "Transfer ke Tabungan": "Transfer to Savings",
+  "Dana Darurat": "Emergency Fund", "Liburan Jepang": "Japan Vacation", "Beli Laptop": "Buy a Laptop",
+  "Hutang ke Andi": "Debt to Andi", "Hutang ke Budi": "Debt to Budi", "Piutang dari Sari": "Receivable from Sari", "Piutang dari Dika": "Receivable from Dika",
+  "Tabungan BCA": "BCA Savings",
+};
+const localizeData = (value: string, language: Language) => language === "en" ? (englishDataLabels[value] ?? value) : value;
+
 const navItems: { value: View; label: string; icon: typeof Home }[] = [
   { value: "dashboard", label: "Dashboard", icon: Home },
   { value: "transactions", label: "Transaksi", icon: ReceiptText },
@@ -115,18 +128,18 @@ export function FinanceApp() {
         <DesktopSidebar active={view} onChange={setView} language={language} />
         <section className="relative h-full min-h-0 min-w-0 overflow-hidden bg-transparent dark:bg-transparent">
           {view === "dashboard" && <DashboardV2 onAdd={() => setIsAddModalOpen(true)} onTransactions={() => setView("transactions")} onNavigate={setView} language={language} />}
-          {view === "transactions" && <TransactionsScreen />}
-          {view === "wallets" && <WalletScreen />}
-          {view === "budget" && <BudgetScreen />}
-          {view === "savings" && <SavingsScreen />}
-          {view === "debt" && <DebtScreen />}
-          {view === "reports" && <ReportsScreen />}
-          {view === "export" && <ExportScreen />}
-          {view === "receipt" && <ReceiptScreen />}
+          {view === "transactions" && <TransactionsScreen language={language} />}
+          {view === "wallets" && <WalletScreen language={language} />}
+          {view === "budget" && <BudgetScreen language={language} />}
+          {view === "savings" && <SavingsScreen language={language} />}
+          {view === "debt" && <DebtScreen language={language} />}
+          {view === "reports" && <ReportsScreen language={language} />}
+          {view === "export" && <ExportScreen language={language} />}
+          {view === "receipt" && <ReceiptScreen language={language} />}
           {view === "settings" && <SettingsScreen onNavigate={setView} language={language} onLanguageChange={changeLanguage} />}
           {view === "profile" && <ProfileScreen language={language} onBack={() => setView("settings")} />}
           <MobileNav active={view} onChange={setView} onAdd={() => setIsAddModalOpen(true)} language={language} />
-          <AddDataModal open={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+          <AddDataModal open={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} language={language} />
         </section>
       </div>
     </main>
@@ -349,7 +362,7 @@ function Metric({ label, value, tone }: { label: string; value: string; tone: st
   );
 }
 
-function TransactionsScreen() {
+function TransactionsScreen({ language }: { language: Language }) {
   const { user, transactions, categories } = useFinanceStore();
   const [filter, setFilter] = useState<TransactionType | "all">("all");
   const filtered = filter === "all" ? transactions : transactions.filter((item) => item.type === filter);
@@ -357,19 +370,19 @@ function TransactionsScreen() {
   const initials = user.name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase();
 
   return (
-    <ScreenShell title="Transaksi" hideMenu compactTitle avatarLabel={initials}>
+    <ScreenShell title={copy(language, "Transaksi", "Transactions")} hideMenu compactTitle avatarLabel={initials}>
       <TransactionPillTabs
         value={filter}
         onChange={setFilter}
         items={[
-          { value: "all", label: "Semua" },
-          { value: "income", label: "Pemasukan" },
-          { value: "expense", label: "Pengeluaran" },
+          { value: "all", label: copy(language, "Semua", "All") },
+          { value: "income", label: copy(language, "Pemasukan", "Income") },
+          { value: "expense", label: copy(language, "Pengeluaran", "Expense") },
           { value: "transfer", label: "Transfer" },
         ]}
       />
       <div className="mt-4">
-        <TransactionList transactions={filtered} categories={categories} />
+        <TransactionList transactions={filtered} categories={categories} language={language} />
       </div>
     </ScreenShell>
   );
@@ -446,7 +459,7 @@ function TransactionPillTabs({ value, onChange, items }: { value: TransactionTyp
     </div>
   );
 }
-function TransactionList({ transactions, categories }: { transactions: ReturnType<typeof useFinanceStore.getState>["transactions"]; categories: ReturnType<typeof useFinanceStore.getState>["categories"] }) {
+function TransactionList({ transactions, categories, language = "id" }: { transactions: ReturnType<typeof useFinanceStore.getState>["transactions"]; categories: ReturnType<typeof useFinanceStore.getState>["categories"]; language?: Language }) {
   return (
     <div className="grid gap-2.5">
       {transactions.map((transaction) => {
@@ -459,14 +472,14 @@ function TransactionList({ transactions, categories }: { transactions: ReturnTyp
               <Icon className="h-[18px] w-[18px]" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[13px] font-medium tracking-[-0.01em] text-slate-950 dark:text-slate-50">{transaction.title}</div>
-              <div className="mt-0.5 truncate text-[11px] font-medium text-slate-500 dark:text-slate-400">{transaction.description}</div>
+              <div className="truncate text-[13px] font-medium tracking-[-0.01em] text-slate-950 dark:text-slate-50">{localizeData(transaction.title, language)}</div>
+              <div className="mt-0.5 truncate text-[11px] font-medium text-slate-500 dark:text-slate-400">{localizeData(transaction.description ?? "", language)}</div>
             </div>
             <div className="shrink-0 text-right">
               <div className={cn("money-value text-[13px] font-semibold tracking-[-0.01em]", isIncome ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
                 {isIncome ? "+" : "-"} {formatCurrency(transaction.amount)}
               </div>
-              <div className="mt-0.5 text-[11px] font-medium text-slate-400">{formatDate(transaction.transactionDate)}</div>
+              <div className="mt-0.5 text-[11px] font-medium text-slate-400">{formatDate(transaction.transactionDate, language)}</div>
             </div>
           </div>
         );
@@ -475,7 +488,7 @@ function TransactionList({ transactions, categories }: { transactions: ReturnTyp
   );
 }
 
-function BudgetScreen() {
+function BudgetScreen({ language }: { language: Language }) {
   const { budgets, categories, addBudget } = useFinanceStore();
   const expenseCategories = categories.filter((category) => category.type === "expense");
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -492,20 +505,20 @@ function BudgetScreen() {
   }
 
   return (
-    <ScreenShell title="Budget Bulanan" action={<Button variant="ghost" size="icon" aria-label="Tambah" onClick={() => setIsFormOpen((value) => !value)}><Plus className={cn("h-[18px] w-[18px] transition-transform", isFormOpen && "rotate-45")} /></Button>}>
+    <ScreenShell title={copy(language, "Budget Bulanan", "Monthly Budget")} action={<Button variant="ghost" size="icon" aria-label={copy(language, "Tambah", "Add")} onClick={() => setIsFormOpen((value) => !value)}><Plus className={cn("h-[18px] w-[18px] transition-transform", isFormOpen && "rotate-45")} /></Button>}>
       {isFormOpen && <Card className="mb-4 grid gap-3">
-        <Field label="Kategori"><Select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>{expenseCategories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</Select></Field>
-        <Field label="Jumlah budget"><Input inputMode="numeric" value={amount} onChange={(event) => setAmount(event.target.value.replace(/\D/g, ""))} placeholder="Contoh: 1500000" /></Field>
-        <div className="flex gap-2"><Button variant="secondary" className="flex-1" onClick={() => setIsFormOpen(false)}>Batal</Button><Button className="flex-1" onClick={saveBudget} disabled={!categoryId || !Number(amount)}>Simpan</Button></div>
+        <Field label={copy(language, "Kategori", "Category")}><Select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>{expenseCategories.map((category) => <option key={category.id} value={category.id}>{localizeData(category.name, language)}</option>)}</Select></Field>
+        <Field label={copy(language, "Jumlah budget", "Budget amount")}><Input inputMode="numeric" value={amount} onChange={(event) => setAmount(event.target.value.replace(/\D/g, ""))} placeholder={copy(language, "Contoh: 1500000", "Example: 1500000")} /></Field>
+        <div className="flex gap-2"><Button variant="secondary" className="flex-1" onClick={() => setIsFormOpen(false)}>{copy(language, "Batal", "Cancel")}</Button><Button className="flex-1" onClick={saveBudget} disabled={!categoryId || !Number(amount)}>{copy(language, "Simpan", "Save")}</Button></div>
       </Card>}
       <Card>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[11px] text-slate-500">Total Budget</p>
+            <p className="text-[11px] text-slate-500">{copy(language, "Total Budget", "Total Budget")}</p>
             <p className="text-base font-semibold tracking-[-0.01em]">{formatCurrency(usage.amount)}</p>
           </div>
           <div className="text-right">
-            <p className="text-[11px] text-slate-500">Terpakai</p>
+            <p className="text-[11px] text-slate-500">{copy(language, "Terpakai", "Used")}</p>
             <p className="text-base font-semibold tracking-[-0.01em]">{formatCurrency(usage.spent)}</p>
           </div>
         </div>
@@ -523,7 +536,7 @@ function BudgetScreen() {
                   <Icon className="h-[18px] w-[18px]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-semibold">{category?.name}</div>
+                  <div className="text-[13px] font-semibold">{localizeData(category?.name ?? "", language)}</div>
                   <div className="text-[11px] text-slate-500">
                     {formatCurrency(budget.spentAmount)} / {formatCurrency(budget.amount)}
                   </div>
@@ -539,7 +552,7 @@ function BudgetScreen() {
   );
 }
 
-function SavingsScreen() {
+function SavingsScreen({ language }: { language: Language }) {
   const { savingsGoals, wallets, addSavingsGoal } = useFinanceStore();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [name, setName] = useState("");
@@ -558,16 +571,16 @@ function SavingsScreen() {
   }
 
   return (
-    <ScreenShell title="Tabungan" action={<Button variant="ghost" size="icon" aria-label="Tambah" onClick={() => setIsFormOpen((value) => !value)}><Plus className={cn("h-[18px] w-[18px] transition-transform", isFormOpen && "rotate-45")} /></Button>}>
+    <ScreenShell title={copy(language, "Tabungan", "Savings")} action={<Button variant="ghost" size="icon" aria-label={copy(language, "Tambah", "Add")} onClick={() => setIsFormOpen((value) => !value)}><Plus className={cn("h-[18px] w-[18px] transition-transform", isFormOpen && "rotate-45")} /></Button>}>
       {isFormOpen && <Card className="mb-4 grid gap-3">
-        <Field label="Nama target"><Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Contoh: Dana darurat" /></Field>
-        <Field label="Dompet"><Select value={walletId} onChange={(event) => setWalletId(event.target.value)}>{wallets.map((wallet) => <option key={wallet.id} value={wallet.id}>{wallet.name}</option>)}</Select></Field>
-        <div className="grid gap-3 sm:grid-cols-2"><Field label="Target dana"><Input inputMode="numeric" value={targetAmount} onChange={(event) => setTargetAmount(event.target.value.replace(/\D/g, ""))} placeholder="5000000" /></Field><Field label="Target tanggal"><Input type="date" value={targetDate} onChange={(event) => setTargetDate(event.target.value)} /></Field></div>
-        <div className="flex gap-2"><Button variant="secondary" className="flex-1" onClick={() => setIsFormOpen(false)}>Batal</Button><Button className="flex-1" onClick={saveGoal} disabled={!name.trim() || !Number(targetAmount)}>Simpan</Button></div>
+        <Field label={copy(language, "Nama target", "Goal name")}><Input value={name} onChange={(event) => setName(event.target.value)} placeholder={copy(language, "Contoh: Dana darurat", "Example: Emergency fund")} /></Field>
+        <Field label={copy(language, "Dompet", "Wallet")}><Select value={walletId} onChange={(event) => setWalletId(event.target.value)}>{wallets.map((wallet) => <option key={wallet.id} value={wallet.id}>{localizeData(wallet.name, language)}</option>)}</Select></Field>
+        <div className="grid gap-3 sm:grid-cols-2"><Field label={copy(language, "Target dana", "Target amount")}><Input inputMode="numeric" value={targetAmount} onChange={(event) => setTargetAmount(event.target.value.replace(/\D/g, ""))} placeholder="5000000" /></Field><Field label={copy(language, "Target tanggal", "Target date")}><Input type="date" value={targetDate} onChange={(event) => setTargetDate(event.target.value)} /></Field></div>
+        <div className="flex gap-2"><Button variant="secondary" className="flex-1" onClick={() => setIsFormOpen(false)}>{copy(language, "Batal", "Cancel")}</Button><Button className="flex-1" onClick={saveGoal} disabled={!name.trim() || !Number(targetAmount)}>{copy(language, "Simpan", "Save")}</Button></div>
       </Card>}
       <div className="glass-surface relative overflow-hidden rounded-[22px] p-5 text-[#182131] dark:text-white sm:p-6">
         <div className="absolute -right-14 -top-14 h-44 w-44 rounded-full border-[28px] border-white/20" />
-        <p className="relative text-[11px] font-medium text-[#647680] dark:text-[#cae6eb]">Total tabungan</p>
+        <p className="relative text-[11px] font-medium text-[#647680] dark:text-[#cae6eb]">{copy(language, "Total tabungan", "Total savings")}</p>
         <p className="relative mt-2 text-[27px] font-semibold tracking-[-0.04em] sm:text-[32px]">{formatCurrency(total)}</p>
       </div>
       <div className="mt-4 grid gap-3">
@@ -578,10 +591,10 @@ function SavingsScreen() {
                 <Target className="h-[18px] w-[18px]" />
               </div>
               <div className="flex-1">
-                <div className="text-[13px] font-semibold">{goal.name}</div>
-                <div className="text-[11px] text-slate-500">Target {formatCurrency(goal.targetAmount)}</div>
+                <div className="text-[13px] font-semibold">{localizeData(goal.name, language)}</div>
+                <div className="text-[11px] text-slate-500">{copy(language, "Target", "Target")} {formatCurrency(goal.targetAmount)}</div>
               </div>
-              <div className="text-right text-[11px] text-slate-500">{formatDate(goal.targetDate)}</div>
+              <div className="text-right text-[11px] text-slate-500">{formatDate(goal.targetDate, language)}</div>
             </div>
             <Progress value={percent(goal.currentAmount, goal.targetAmount)} />
             <div className="mt-2 text-[13px] font-semibold">{formatCurrency(goal.currentAmount)}</div>
@@ -592,7 +605,7 @@ function SavingsScreen() {
   );
 }
 
-function DebtScreen() {
+function DebtScreen({ language }: { language: Language }) {
   const { debts, addDebt } = useFinanceStore();
   const [tab, setTab] = useState<"debt" | "receivable" | "all">("debt");
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -611,30 +624,30 @@ function DebtScreen() {
   }
 
   return (
-    <ScreenShell title="Hutang / Piutang">
-      <Tabs value={tab} onChange={setTab} items={[{ value: "debt", label: "Hutang" }, { value: "receivable", label: "Piutang" }, { value: "all", label: "Semua" }]} />
+    <ScreenShell title={copy(language, "Hutang / Piutang", "Debt / Receivables")}>
+      <Tabs value={tab} onChange={setTab} items={[{ value: "debt", label: copy(language, "Hutang", "Debt") }, { value: "receivable", label: copy(language, "Piutang", "Receivables") }, { value: "all", label: copy(language, "Semua", "All") }]} />
       {isFormOpen && <Card className="mt-4 grid gap-3">
-        <Field label="Nama"><Input value={personName} onChange={(event) => setPersonName(event.target.value)} placeholder="Nama orang atau pihak" /></Field>
-        <div className="grid gap-3 sm:grid-cols-2"><Field label="Jumlah"><Input inputMode="numeric" value={amount} onChange={(event) => setAmount(event.target.value.replace(/\D/g, ""))} placeholder="500000" /></Field><Field label="Jatuh tempo"><Input type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} /></Field></div>
-        <div className="flex gap-2"><Button variant="secondary" className="flex-1" onClick={() => setIsFormOpen(false)}>Batal</Button><Button className="flex-1" onClick={saveDebt} disabled={!personName.trim() || !Number(amount)}>Simpan</Button></div>
+        <Field label={copy(language, "Nama", "Name")}><Input value={personName} onChange={(event) => setPersonName(event.target.value)} placeholder={copy(language, "Nama orang atau pihak", "Person or organization name")} /></Field>
+        <div className="grid gap-3 sm:grid-cols-2"><Field label={copy(language, "Jumlah", "Amount")}><Input inputMode="numeric" value={amount} onChange={(event) => setAmount(event.target.value.replace(/\D/g, ""))} placeholder="500000" /></Field><Field label={copy(language, "Jatuh tempo", "Due date")}><Input type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} /></Field></div>
+        <div className="flex gap-2"><Button variant="secondary" className="flex-1" onClick={() => setIsFormOpen(false)}>{copy(language, "Batal", "Cancel")}</Button><Button className="flex-1" onClick={saveDebt} disabled={!personName.trim() || !Number(amount)}>{copy(language, "Simpan", "Save")}</Button></div>
       </Card>}
       <div className="mt-4 grid gap-3">
         {filtered.map((debt) => (
           <Card key={debt.id}>
             <div className="flex items-center gap-3">
               <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg", debt.type === "debt" ? "bg-slate-100 text-slate-600" : "bg-blue-50 text-blue-600")}>{debt.type === "debt" ? <ArrowUpRight className="h-[18px] w-[18px]" /> : <ArrowDownLeft className="h-[18px] w-[18px]" />}</div>
-              <div className="flex-1"><div className="text-[13px] font-semibold">{debt.note}</div><div className="text-[11px] text-slate-500">Jatuh tempo: {formatDate(debt.dueDate)}</div></div>
-              <div className="text-right"><div className={cn("money-value text-[13px] font-semibold", debt.type === "debt" ? "text-slate-700" : "text-blue-600")}>{formatCurrency(debt.remainingAmount)}</div><div className={cn("text-[11px] font-semibold", debt.status === "overdue" ? "text-rose-500" : "text-amber-600")}>{debt.status === "overdue" ? "Belum Lunas" : "Aktif"}</div></div>
+              <div className="flex-1"><div className="text-[13px] font-semibold">{localizeData(debt.note ?? "", language)}</div><div className="text-[11px] text-slate-500">{copy(language, "Jatuh tempo", "Due date")}: {formatDate(debt.dueDate, language)}</div></div>
+              <div className="text-right"><div className={cn("money-value text-[13px] font-semibold", debt.type === "debt" ? "text-slate-700" : "text-blue-600")}>{formatCurrency(debt.remainingAmount)}</div><div className={cn("text-[11px] font-semibold", debt.status === "overdue" ? "text-rose-500" : "text-amber-600")}>{debt.status === "overdue" ? copy(language, "Belum Lunas", "Overdue") : copy(language, "Aktif", "Active")}</div></div>
             </div>
           </Card>
         ))}
       </div>
-      <Button className="mt-5 w-full" onClick={() => setIsFormOpen((value) => !value)}><Plus className="h-4 w-4" />{isFormOpen ? "Tutup Form" : "Tambah Hutang / Piutang"}</Button>
+      <Button className="mt-5 w-full" onClick={() => setIsFormOpen((value) => !value)}><Plus className="h-4 w-4" />{isFormOpen ? copy(language, "Tutup Form", "Close Form") : copy(language, "Tambah Hutang / Piutang", "Add Debt / Receivable")}</Button>
     </ScreenShell>
   );
 }
 
-function ReportsScreen() {
+function ReportsScreen({ language }: { language: Language }) {
   const { transactions, categories } = useFinanceStore();
   const [reportTab, setReportTab] = useState<"summary" | "income" | "expense">("summary");
   const expense = getMonthlyExpense(transactions);
@@ -645,7 +658,7 @@ function ReportsScreen() {
   const pieData = categories
     .filter((category) => category.type === "expense")
     .map((category, index) => ({
-      name: category.name,
+      name: localizeData(category.name, language),
       value: transactions.filter((transaction) => transaction.categoryId === category.id).reduce((total, transaction) => total + transaction.amount, 0),
       color: reportPalette[index % reportPalette.length],
     }))
@@ -653,14 +666,14 @@ function ReportsScreen() {
     .sort((a, b) => b.value - a.value);
 
   return (
-    <ScreenShell title="Laporan">
+    <ScreenShell title={copy(language, "Laporan", "Reports")}>
       <Tabs
         value={reportTab}
         onChange={setReportTab}
         items={[
-          { value: "summary", label: "Ringkasan" },
-          { value: "income", label: "Pemasukan" },
-          { value: "expense", label: "Pengeluaran" },
+          { value: "summary", label: copy(language, "Ringkasan", "Summary") },
+          { value: "income", label: copy(language, "Pemasukan", "Income") },
+          { value: "expense", label: copy(language, "Pengeluaran", "Expense") },
         ]}
       />
 
@@ -669,14 +682,14 @@ function ReportsScreen() {
           <div className="relative">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#8793a5] dark:text-[#c6d2e2]">Arus kas bersih</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#8793a5] dark:text-[#c6d2e2]">{copy(language, "Arus kas bersih", "Net cash flow")}</p>
                 <p className="money-value mt-2 text-[28px] font-semibold tracking-[-0.03em] text-[#182131] sm:text-[36px] dark:text-white">{formatCurrency(net)}</p>
               </div>
               <span className="flex h-11 w-11 items-center justify-center rounded-full border border-blue-100 bg-blue-50 text-blue-600 dark:border-white/10 dark:bg-white/10 dark:text-white"><PieChartIcon className="h-5 w-5" /></span>
             </div>
             <div className="mt-7 grid grid-cols-2 gap-2.5 sm:max-w-md">
-              <ReportMetric icon={ArrowDownLeft} label="Pemasukan" value={formatCurrency(income)} tone="cyan" />
-              <ReportMetric icon={ArrowUpRight} label="Pengeluaran" value={formatCurrency(expense)} tone="slate" />
+              <ReportMetric icon={ArrowDownLeft} label={copy(language, "Pemasukan", "Income")} value={formatCurrency(income)} tone="cyan" />
+              <ReportMetric icon={ArrowUpRight} label={copy(language, "Pengeluaran", "Expense")} value={formatCurrency(expense)} tone="slate" />
             </div>
           </div>
         </div>
@@ -685,21 +698,21 @@ function ReportsScreen() {
           <Card className="overflow-hidden">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="type-card-title">Tren bulanan</h2>
-                <p className="type-caption mt-1 text-slate-500">Perbandingan pemasukan dan pengeluaran</p>
+                <h2 className="type-card-title">{copy(language, "Tren bulanan", "Monthly trend")}</h2>
+                <p className="type-caption mt-1 text-slate-500">{copy(language, "Perbandingan pemasukan dan pengeluaran", "Income and expense comparison")}</p>
               </div>
-              <span className="rounded-full bg-blue-50 px-3 py-1.5 text-[10px] font-medium text-blue-600 dark:bg-blue-950/40 dark:text-blue-200">6 bulan</span>
+              <span className="rounded-full bg-blue-50 px-3 py-1.5 text-[10px] font-medium text-blue-600 dark:bg-blue-950/40 dark:text-blue-200">{copy(language, "6 bulan", "6 months")}</span>
             </div>
-            <ReportTrendChart />
+            <ReportTrendChart language={language} />
           </Card>
 
           <Card>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="type-card-title">Statistik pengeluaran</h2>
-                <p className="type-caption mt-1 text-slate-500">Progres setiap kategori bulan ini</p>
+                <h2 className="type-card-title">{copy(language, "Statistik pengeluaran", "Expense statistics")}</h2>
+                <p className="type-caption mt-1 text-slate-500">{copy(language, "Progres setiap kategori bulan ini", "Progress for each category this month")}</p>
               </div>
-              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-medium text-slate-600 dark:bg-white/5 dark:text-slate-300">{expenseRatio}% terpakai</span>
+              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-medium text-slate-600 dark:bg-white/5 dark:text-slate-300">{expenseRatio}% {copy(language, "terpakai", "used")}</span>
             </div>
             <div className="mt-5 grid gap-5">
               {pieData.slice(0, 4).map((item) => {
@@ -709,7 +722,7 @@ function ReportsScreen() {
                     <div className="mb-2 flex items-end justify-between gap-3">
                       <div className="min-w-0">
                         <p className="truncate text-[13px] font-semibold text-slate-800 dark:text-white">{item.name}</p>
-                        <p className="mt-0.5 text-[10px] text-slate-400">Bagian dari total pengeluaran</p>
+                        <p className="mt-0.5 text-[10px] text-slate-400">{copy(language, "Bagian dari total pengeluaran", "Share of total expenses")}</p>
                       </div>
                       <p className="money-value shrink-0 text-[16px] font-semibold tracking-[-0.02em]">{formatCurrency(item.value)}</p>
                     </div>
@@ -723,22 +736,22 @@ function ReportsScreen() {
                   </div>
                 );
               })}
-              {pieData.length === 0 && <p className="py-8 text-center text-[12px] text-slate-500">Belum ada pengeluaran pada periode ini.</p>}
+              {pieData.length === 0 && <p className="py-8 text-center text-[12px] text-slate-500">{copy(language, "Belum ada pengeluaran pada periode ini.", "There are no expenses for this period.")}</p>}
             </div>
           </Card>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <ReportSummaryCard label="Rasio pengeluaran" value={`${expenseRatio}%`} note="dari total pemasukan" delay="stagger-1" />
-          <ReportSummaryCard label="Sisa bulan ini" value={formatCurrency(net)} note="setelah pengeluaran" delay="stagger-2" />
-          <ReportSummaryCard label="Transaksi" value={`${transactions.length}`} note="aktivitas tercatat" delay="stagger-3" className="col-span-2 sm:col-span-1" />
+          <ReportSummaryCard label={copy(language, "Rasio pengeluaran", "Expense ratio")} value={`${expenseRatio}%`} note={copy(language, "dari total pemasukan", "of total income")} delay="stagger-1" />
+          <ReportSummaryCard label={copy(language, "Sisa bulan ini", "Remaining this month")} value={formatCurrency(net)} note={copy(language, "setelah pengeluaran", "after expenses")} delay="stagger-2" />
+          <ReportSummaryCard label={copy(language, "Transaksi", "Transactions")} value={`${transactions.length}`} note={copy(language, "aktivitas tercatat", "recorded activities")} delay="stagger-3" className="col-span-2 sm:col-span-1" />
         </div>
       </section>
     </ScreenShell>
   );
 }
 
-function ExportScreen() {
+function ExportScreen({ language }: { language: Language }) {
   const { transactions, budgets, debts, categories } = useFinanceStore();
   const [format, setFormat] = useState<"excel" | "pdf">("excel");
   const [selectedData, setSelectedData] = useState<Record<string, boolean>>({ Transaksi: true, Budget: true, "Hutang / Piutang": true, Ringkasan: false });
@@ -751,81 +764,81 @@ function ExportScreen() {
     const sections: string[] = [];
     const csvRow = (values: (string | number)[]) => values.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(",");
     if (selectedData.Transaksi) {
-      sections.push("TRANSAKSI", csvRow(["Tanggal", "Judul", "Jenis", "Jumlah", "Deskripsi"]), ...transactions.map((item) => csvRow([item.transactionDate, item.title, item.type, item.amount, item.description ?? ""])));
+      sections.push(copy(language, "TRANSAKSI", "TRANSACTIONS"), csvRow(language === "en" ? ["Date", "Title", "Type", "Amount", "Description"] : ["Tanggal", "Judul", "Jenis", "Jumlah", "Deskripsi"]), ...transactions.map((item) => csvRow([item.transactionDate, localizeData(item.title, language), item.type, item.amount, localizeData(item.description ?? "", language)])));
     }
     if (selectedData.Budget) {
-      sections.push("", "BUDGET", csvRow(["Kategori", "Jumlah", "Terpakai"]), ...budgets.map((item) => csvRow([categories.find((category) => category.id === item.categoryId)?.name ?? "-", item.amount, item.spentAmount])));
+      sections.push("", "BUDGET", csvRow(language === "en" ? ["Category", "Amount", "Used"] : ["Kategori", "Jumlah", "Terpakai"]), ...budgets.map((item) => csvRow([localizeData(categories.find((category) => category.id === item.categoryId)?.name ?? "-", language), item.amount, item.spentAmount])));
     }
     if (selectedData["Hutang / Piutang"]) {
-      sections.push("", "HUTANG / PIUTANG", csvRow(["Nama", "Jenis", "Jumlah", "Sisa", "Jatuh tempo"]), ...debts.map((item) => csvRow([item.personName, item.type, item.amount, item.remainingAmount, item.dueDate])));
+      sections.push("", copy(language, "HUTANG / PIUTANG", "DEBT / RECEIVABLES"), csvRow(language === "en" ? ["Name", "Type", "Amount", "Remaining", "Due date"] : ["Nama", "Jenis", "Jumlah", "Sisa", "Jatuh tempo"]), ...debts.map((item) => csvRow([item.personName, item.type, item.amount, item.remainingAmount, item.dueDate])));
     }
     if (selectedData.Ringkasan) {
-      sections.push("", "RINGKASAN", csvRow(["Jumlah transaksi", "Jumlah budget", "Jumlah hutang/piutang"]), csvRow([transactions.length, budgets.length, debts.length]));
+      sections.push("", copy(language, "RINGKASAN", "SUMMARY"), csvRow(language === "en" ? ["Transaction count", "Budget count", "Debt/receivable count"] : ["Jumlah transaksi", "Jumlah budget", "Jumlah hutang/piutang"]), csvRow([transactions.length, budgets.length, debts.length]));
     }
     const blob = new Blob([sections.join("\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "laporan-keuangan.csv";
+    link.download = language === "en" ? "financial-report.csv" : "laporan-keuangan.csv";
     link.click();
     URL.revokeObjectURL(url);
   }
 
   return (
-    <ScreenShell title="Export Laporan">
-      <p className="mb-3 text-[13px] text-slate-500">Pilih periode dan format file untuk mengunduh laporan keuangan.</p>
+    <ScreenShell title={copy(language, "Export Laporan", "Export Report")}>
+      <p className="mb-3 text-[13px] text-slate-500">{copy(language, "Pilih periode dan format file untuk mengunduh laporan keuangan.", "Choose a period and file format to download your financial report.")}</p>
       <Card className="grid gap-3">
-        <Field label="Periode">
+        <Field label={copy(language, "Periode", "Period")}>
           <Input value="01 Jul 2026 - 31 Jul 2026" readOnly />
         </Field>
-        <Field label="Format File">
+        <Field label={copy(language, "Format File", "File Format")}>
           <Select value={format} onChange={(event) => setFormat(event.target.value as "excel" | "pdf")}>
             <option value="excel">Excel (.xlsx)</option>
             <option value="pdf">PDF (.pdf)</option>
           </Select>
         </Field>
-        <Field label="Jenis Data">
+        <Field label={copy(language, "Jenis Data", "Data Type")}>
           <div className="grid gap-2 text-[13px] text-slate-700">
             {["Transaksi", "Budget", "Hutang / Piutang", "Ringkasan"].map((item) => (
               <label key={item} className="flex items-center gap-2">
                 <input type="checkbox" checked={selectedData[item]} onChange={(event) => setSelectedData((current) => ({ ...current, [item]: event.target.checked }))} className="h-4 w-4 accent-blue-600" />
-                {item}
+                {language === "en" ? ({ Transaksi: "Transactions", Budget: "Budget", "Hutang / Piutang": "Debt / Receivables", Ringkasan: "Summary" }[item] ?? item) : item}
               </label>
             ))}
           </div>
         </Field>
         <Button onClick={exportReport} disabled={!Object.values(selectedData).some(Boolean)}>
           <Download className="h-4 w-4" />
-          Export Sekarang
+          {copy(language, "Export Sekarang", "Export Now")}
         </Button>
       </Card>
     </ScreenShell>
   );
 }
 
-function ReceiptScreen() {
+function ReceiptScreen({ language }: { language: Language }) {
   const { receiptScans, confirmReceipt } = useFinanceStore();
   const [uploadedFile, setUploadedFile] = useState("");
   const latest = receiptScans[0];
 
   return (
-    <ScreenShell title="Scan Struk">
+    <ScreenShell title={copy(language, "Scan Struk", "Scan Receipt")}>
       <div className="glass-surface rounded-[24px] border-dashed p-6 text-center sm:p-8">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[16px] bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-200">
           <Camera className="h-5 w-5" />
         </div>
-        <p className="mt-3 text-[13px] font-semibold">Ambil foto struk</p>
-        <p className="text-[11px] text-slate-500">atau pilih dari galeri</p>
+        <p className="mt-3 text-[13px] font-semibold">{copy(language, "Ambil foto struk", "Take a receipt photo")}</p>
+        <p className="text-[11px] text-slate-500">{copy(language, "atau pilih dari galeri", "or choose one from the gallery")}</p>
         <label className="mt-4 inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-[12px] border border-slate-200 bg-white px-4 text-[13px] font-medium text-slate-700 transition-colors hover:border-blue-200 hover:text-blue-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
           <Upload className="h-4 w-4" />
-          {uploadedFile || "Upload Foto"}
+          {uploadedFile || copy(language, "Upload Foto", "Upload Photo")}
           <input type="file" accept="image/*" className="sr-only" onChange={(event) => setUploadedFile(event.target.files?.[0]?.name ?? "")} />
         </label>
       </div>
       <Card className="mt-5">
-        <h2 className="mb-3 text-sm font-semibold tracking-[-0.01em]">Hasil Deteksi</h2>
+        <h2 className="mb-3 text-sm font-semibold tracking-[-0.01em]">{copy(language, "Hasil Deteksi", "Detection Result")}</h2>
         <SummaryRow label="Merchant" value={latest?.merchantName ?? "Alfamart"} />
-        <SummaryRow label="Tanggal" value={latest ? formatDate(latest.detectedDate) : "10 Jul 2026"} />
+        <SummaryRow label={copy(language, "Tanggal", "Date")} value={latest ? formatDate(latest.detectedDate, language) : copy(language, "10 Jul 2026", "Jul 10, 2026")} />
         <SummaryRow label="Total" value={formatCurrency(latest?.detectedAmount ?? 56500)} />
         <Button
           className="mt-4 w-full"
@@ -840,7 +853,7 @@ function ReceiptScreen() {
             })
           }
         >
-          Simpan sebagai Transaksi
+          {copy(language, "Simpan sebagai Transaksi", "Save as Transaction")}
         </Button>
       </Card>
     </ScreenShell>
@@ -1029,7 +1042,7 @@ function DonutChart({ data }: { data: { name: string; value: number; color: stri
   );
 }
 
-function ReportTrendChart() {
+function ReportTrendChart({ language }: { language: Language }) {
   const width = 560;
   const height = 210;
   const paddingX = 24;
@@ -1048,7 +1061,7 @@ function ReportTrendChart() {
 
   return (
     <div className="mt-4 overflow-hidden rounded-[16px] border border-slate-100 bg-slate-50/80 p-2 dark:border-white/5 dark:bg-white/[.03]">
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-[190px] w-full" role="img" aria-label="Grafik tren pemasukan dan pengeluaran enam bulan">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-[190px] w-full" role="img" aria-label={copy(language, "Grafik tren pemasukan dan pengeluaran enam bulan", "Six-month income and expense trend chart")}>
         <defs>
           <linearGradient id="incomeArea" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#16a34a" stopOpacity="0.16" />
@@ -1066,8 +1079,8 @@ function ReportTrendChart() {
         {reportPoints.map((item, index) => <text key={item.label} x={incomePoints[index][0]} y={height - 8} textAnchor="middle" className="fill-slate-400 text-[10px] font-medium">{item.label}</text>)}
       </svg>
       <div className="flex items-center gap-4 px-2 pb-2 text-[10px] font-medium text-slate-500">
-        <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-emerald-600" />Pemasukan</span>
-        <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-rose-600" />Pengeluaran</span>
+        <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-emerald-600" />{copy(language, "Pemasukan", "Income")}</span>
+        <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-rose-600" />{copy(language, "Pengeluaran", "Expense")}</span>
       </div>
     </div>
   );
@@ -1104,7 +1117,7 @@ function SummaryRow({ label, value, tone = "text-slate-950" }: { label: string; 
   );
 }
 
-function AddDataModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function AddDataModal({ open, onClose, language }: { open: boolean; onClose: () => void; language: Language }) {
   const { wallets, categories, addTransaction } = useFinanceStore();
   const [type, setType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState("");
@@ -1185,9 +1198,9 @@ function AddDataModal({ open, onClose }: { open: boolean; onClose: () => void })
         }}
       >
         <header className="flex min-h-[72px] items-center justify-between border-b border-black/8 bg-white px-4 dark:border-white/7 dark:bg-[#151619]">
-          <button onClick={requestClose} className="liquid-button flex h-10 w-10 items-center justify-center rounded-full" aria-label="Tutup transaksi"><ArrowLeft className="h-[18px] w-[18px]" /></button>
+          <button onClick={requestClose} className="liquid-button flex h-10 w-10 items-center justify-center rounded-full" aria-label={copy(language, "Tutup transaksi", "Close transaction")}><ArrowLeft className="h-[18px] w-[18px]" /></button>
           <div className="text-center">
-            <p className="text-[12px] font-semibold">Tambah transaksi</p>
+            <p className="text-[12px] font-semibold">{copy(language, "Tambah transaksi", "Add transaction")}</p>
             <div className="relative mt-1.5 flex h-9 items-center rounded-full border border-black/10 bg-slate-100/90 px-2 transition-colors hover:bg-slate-200/90 focus-within:border-slate-400 dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15">
               <CalendarDays className="pointer-events-none absolute left-3 h-3.5 w-3.5 text-slate-500 dark:text-slate-300" />
               <input
@@ -1195,7 +1208,7 @@ function AddDataModal({ open, onClose }: { open: boolean; onClose: () => void })
                 value={transactionDate}
                 onChange={(event) => setTransactionDate(event.target.value)}
                 onClick={(event) => event.currentTarget.showPicker?.()}
-                aria-label="Tanggal transaksi"
+                aria-label={copy(language, "Tanggal transaksi", "Transaction date")}
                 className="h-full w-[142px] cursor-pointer bg-transparent pl-7 pr-1 text-center text-[11px] font-medium text-slate-700 outline-none dark:text-slate-100"
               />
             </div>
@@ -1205,14 +1218,14 @@ function AddDataModal({ open, onClose }: { open: boolean; onClose: () => void })
 
         <div className="px-4 pt-4 sm:px-6">
           <div className="liquid-panel flex rounded-[17px] p-1.5">
-            <button onClick={() => setType("expense")} className={cn("h-10 flex-1 rounded-[12px] text-[12px] font-medium transition-colors", type === "expense" ? "bg-rose-600 text-white" : "text-[#665f73] dark:text-[#cbc4d5]")}>Pengeluaran</button>
-            <button onClick={() => setType("income")} className={cn("h-10 flex-1 rounded-[12px] text-[12px] font-medium transition-colors", type === "income" ? "bg-emerald-600 text-white" : "text-[#75838c] dark:text-[#aebbc1]")}>Pemasukan</button>
+            <button onClick={() => setType("expense")} className={cn("h-10 flex-1 rounded-[12px] text-[12px] font-medium transition-colors", type === "expense" ? "bg-rose-600 text-white" : "text-[#665f73] dark:text-[#cbc4d5]")}>{copy(language, "Pengeluaran", "Expense")}</button>
+            <button onClick={() => setType("income")} className={cn("h-10 flex-1 rounded-[12px] text-[12px] font-medium transition-colors", type === "income" ? "bg-emerald-600 text-white" : "text-[#75838c] dark:text-[#aebbc1]")}>{copy(language, "Pemasukan", "Income")}</button>
           </div>
         </div>
 
         <div className="liquid-panel mx-4 mt-3 flex justify-center rounded-[22px] px-4 py-5 sm:mx-6">
           <div className="text-center">
-            <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-[#756d82]">Jumlah transaksi</p>
+            <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-[#756d82]">{copy(language, "Jumlah transaksi", "Transaction amount")}</p>
             <h1 className="money-value mt-1 break-all text-center text-[30px] font-semibold tracking-[-0.035em] sm:text-[36px]">Rp {amount ? formatCurrency(Number(amount)).replace('Rp', '').trim() : "0"}</h1>
           </div>
         </div>
@@ -1220,10 +1233,10 @@ function AddDataModal({ open, onClose }: { open: boolean; onClose: () => void })
         <div className="min-h-0 overflow-y-auto px-4 pb-2 pt-3 sm:px-6">
           <div ref={walletPickerRef} className="relative">
             <button onClick={() => setIsWalletPickerOpen((value) => !value)} aria-expanded={isWalletPickerOpen} className="liquid-panel flex h-12 w-full items-center justify-between rounded-[16px] px-4 text-[12px] font-medium">
-              <span className="flex items-center gap-3"><Wallet className="h-[18px] w-[18px] text-black dark:text-white" />{wallets.find((w) => w.id === walletId)?.name || "Pilih dompet"}</span>
+              <span className="flex items-center gap-3"><Wallet className="h-[18px] w-[18px] text-black dark:text-white" />{wallets.find((w) => w.id === walletId) ? localizeData(wallets.find((w) => w.id === walletId)!.name, language) : copy(language, "Pilih dompet", "Choose wallet")}</span>
               <ChevronDown className={cn("h-4 w-4 text-[#75838c] transition-transform", isWalletPickerOpen && "rotate-180")} />
             </button>
-            {isWalletPickerOpen && <div className="glass-strong animate-card absolute left-0 right-0 top-14 z-30 rounded-[15px] p-1.5">{wallets.map((wallet) => <button key={wallet.id} onClick={() => { setWalletId(wallet.id); setIsWalletPickerOpen(false); }} className={cn("flex h-10 w-full items-center rounded-[10px] px-3 text-left text-[11px]", walletId === wallet.id ? "bg-blue-600 text-white" : "hover:bg-blue-50 dark:hover:bg-white/5")}>{wallet.name}</button>)}</div>}
+            {isWalletPickerOpen && <div className="glass-strong animate-card absolute left-0 right-0 top-14 z-30 rounded-[15px] p-1.5">{wallets.map((wallet) => <button key={wallet.id} onClick={() => { setWalletId(wallet.id); setIsWalletPickerOpen(false); }} className={cn("flex h-10 w-full items-center rounded-[10px] px-3 text-left text-[11px]", walletId === wallet.id ? "bg-blue-600 text-white" : "hover:bg-blue-50 dark:hover:bg-white/5")}>{localizeData(wallet.name, language)}</button>)}</div>}
           </div>
 
           <div className="liquid-panel mt-3 grid grid-cols-4 gap-x-2 gap-y-4 rounded-[22px] p-4">
@@ -1233,14 +1246,14 @@ function AddDataModal({ open, onClose }: { open: boolean; onClose: () => void })
               return (
                 <button key={cat.id} onClick={() => setCategoryId(cat.id)} className="flex min-w-0 flex-col items-center gap-2">
                   <span className={cn("flex h-11 w-11 items-center justify-center rounded-[14px] border transition-colors", isSelected ? type === "income" ? "border-emerald-600 bg-emerald-600 text-white" : "border-rose-600 bg-rose-600 text-white" : "border-black/10 bg-white text-[#665f73] dark:border-white/10 dark:bg-white/5 dark:text-[#c7bfce]")}><Icon className="h-[18px] w-[18px]" /></span>
-                  <span className={cn("w-full truncate text-[10px]", isSelected ? type === "income" ? "font-medium text-emerald-600 dark:text-emerald-400" : "font-medium text-rose-600 dark:text-rose-400" : "text-[#75838c] dark:text-[#a7b6bd]")}>{cat.name}</span>
+                  <span className={cn("w-full truncate text-[10px]", isSelected ? type === "income" ? "font-medium text-emerald-600 dark:text-emerald-400" : "font-medium text-rose-600 dark:text-rose-400" : "text-[#75838c] dark:text-[#a7b6bd]")}>{localizeData(cat.name, language)}</span>
                 </button>
               );
             })}
           </div>
 
           <div className="liquid-panel mt-3 flex h-12 items-center justify-between rounded-[16px] px-4">
-            <div className="flex w-full items-center gap-3"><Camera className="h-[18px] w-[18px] shrink-0 text-black dark:text-white" /><input value={note} onChange={(e) => setNote(e.target.value.slice(0, 80))} placeholder="Tambah catatan" className="w-full bg-transparent text-[12px] outline-none placeholder:text-[#96a1a7]" /></div>
+            <div className="flex w-full items-center gap-3"><Camera className="h-[18px] w-[18px] shrink-0 text-black dark:text-white" /><input value={note} onChange={(e) => setNote(e.target.value.slice(0, 80))} placeholder={copy(language, "Tambah catatan", "Add a note")} className="w-full bg-transparent text-[12px] outline-none placeholder:text-[#96a1a7]" /></div>
             <span className="ml-2 shrink-0 text-[9px] text-[#8a968c]">{note.length}/80</span>
           </div>
         </div>
@@ -1250,7 +1263,7 @@ function AddDataModal({ open, onClose }: { open: boolean; onClose: () => void })
             {["1", "2", "3", "4", "5", "6", "7", "8", "9", "000", "0"].map((num) => <button key={num} onClick={() => handleNumpad(num)} className="liquid-button flex h-10 items-center justify-center rounded-[13px] text-[16px] font-medium active:bg-blue-100">{num}</button>)}
             <button onClick={() => handleNumpad("delete")} className="liquid-button flex h-10 items-center justify-center rounded-[13px] active:bg-blue-100"><Delete className="h-5 w-5" /></button>
           </div>
-          <button onClick={submit} className={cn("mt-3 h-12 w-full rounded-[14px] text-[13px] font-semibold text-white transition-transform active:scale-[.99]", type === "expense" ? "bg-rose-600 hover:bg-rose-700" : "bg-emerald-600 hover:bg-emerald-700")}>Simpan transaksi</button>
+          <button onClick={submit} className={cn("mt-3 h-12 w-full rounded-[14px] text-[13px] font-semibold text-white transition-transform active:scale-[.99]", type === "expense" ? "bg-rose-600 hover:bg-rose-700" : "bg-emerald-600 hover:bg-emerald-700")}>{copy(language, "Simpan transaksi", "Save transaction")}</button>
         </footer>
       </div>
     </div>
@@ -1283,9 +1296,9 @@ function MobileNav({ active, onChange, onAdd, language }: { active: View; onChan
         {mobileItems.slice(0, 2).map((item) => (
           <MobileNavButton key={item.value} item={item} active={navigationActive} onChange={onChange} />
         ))}
-        <button onClick={onAdd} aria-label="Tambah data" className="relative flex h-[72px] min-w-0 -translate-y-4 items-center justify-center rounded-full transition-transform active:scale-95">
+        <button onClick={onAdd} aria-label={isEnglish ? "Add data" : "Tambah data"} className="relative flex h-[72px] min-w-0 -translate-y-4 items-center justify-center rounded-full transition-transform active:scale-95">
           <span className="flex h-[58px] w-[58px] items-center justify-center rounded-full bg-black text-white dark:bg-white dark:text-black"><Plus className="h-7 w-7 stroke-[1.8]" /></span>
-          <span className="sr-only">Tambah</span>
+          <span className="sr-only">{isEnglish ? "Add" : "Tambah"}</span>
         </button>
         {mobileItems.slice(2).map((item) => (
           <MobileNavButton key={item.value} item={item} active={navigationActive} onChange={onChange} />
@@ -1333,8 +1346,8 @@ function DesktopSidebar({ active, onChange, language }: { active: View; onChange
           <Wallet className="h-5 w-5" />
         </div>
         <div>
-          <div className="text-[15px] font-semibold tracking-[-0.02em]">Catat Keuangan</div>
-          <div className="mt-0.5 text-[10px] font-medium text-slate-500">Finansial lebih tenang</div>
+          <div className="text-[15px] font-semibold tracking-[-0.02em]">{isEnglish ? "Finance Tracker" : "Catat Keuangan"}</div>
+          <div className="mt-0.5 text-[10px] font-medium text-slate-500">{isEnglish ? "Calmer personal finances" : "Finansial lebih tenang"}</div>
         </div>
       </div>
       <div className="grid gap-1.5">

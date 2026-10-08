@@ -6,8 +6,8 @@ export function formatCurrency(value: number) {
   }).format(value);
 }
 
-export function formatDate(value: string) {
-  return new Intl.DateTimeFormat("id-ID", {
+export function formatDate(value: string, locale: "id" | "en" = "id") {
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "id-ID", {
     day: "2-digit",
     month: "short",
     year: "numeric",

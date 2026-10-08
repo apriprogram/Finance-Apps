@@ -31,6 +31,9 @@ type DashboardV2Props = {
 };
 
 const periods = ["Hari", "Minggu", "Bulan", "Tahun"] as const;
+const englishPeriods: Record<(typeof periods)[number], string> = { Hari: "Day", Minggu: "Week", Bulan: "Month", Tahun: "Year" };
+const englishDataLabels: Record<string, string> = { Makanan: "Food", Belanja: "Shopping", Hiburan: "Entertainment", Transportasi: "Transportation", Tagihan: "Bills", Kesehatan: "Health", Pendidikan: "Education", Lainnya: "Other", Gaji: "Salary", Bisnis: "Business", Tabungan: "Savings", Hadiah: "Gift", "Gaji Bulanan": "Monthly Salary", "Belanja Bulanan": "Monthly Shopping", "Makan Siang": "Lunch", "Pulsa Internet": "Mobile Data", Kopi: "Coffee", "Transfer ke Tabungan": "Transfer to Savings", "Tabungan BCA": "BCA Savings" };
+const englishMonths: Record<string, string> = { "Agustus 2026": "August 2026", "September 2026": "September 2026", "Oktober 2026": "October 2026" };
 
 export function DashboardV2({ onAdd, onTransactions, onNavigate, language = "id" }: DashboardV2Props) {
   const { user, wallets, transactions, categories } = useFinanceStore();
@@ -81,7 +84,7 @@ export function DashboardV2({ onAdd, onTransactions, onNavigate, language = "id"
           <div className="min-w-0 max-w-[180px] sm:max-w-none"><h1 className="truncate text-[15px] font-semibold leading-5 tracking-[-0.01em]">{user.name}</h1></div>
           <div className="flex-1" />
           <div className="hidden sm:block">
-            <button onClick={toggleTheme} aria-label={isDark ? "Aktifkan mode terang" : "Aktifkan mode gelap"} className="dashboard-icon-button">
+            <button onClick={toggleTheme} aria-label={isDark ? (isEnglish ? "Enable light mode" : "Aktifkan mode terang") : (isEnglish ? "Enable dark mode" : "Aktifkan mode gelap")} className="dashboard-icon-button">
               {isDark ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
             </button>
           </div>
@@ -104,7 +107,7 @@ export function DashboardV2({ onAdd, onTransactions, onNavigate, language = "id"
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <p className="text-[12px] font-normal leading-4 text-slate-500 dark:text-slate-400">{isEnglish ? "Financial summary" : "Ringkasan keuangan"}</p>
-            <h2 className="mt-0.5 text-[21px] font-semibold leading-7 tracking-[-0.02em] text-[#171717] sm:text-[24px] dark:text-white">{selectedMonth}</h2>
+            <h2 className="mt-0.5 text-[21px] font-semibold leading-7 tracking-[-0.02em] text-[#171717] sm:text-[24px] dark:text-white">{isEnglish ? englishMonths[selectedMonth] : selectedMonth}</h2>
           </div>
           <div ref={periodRef} className="relative">
             <button onClick={() => { setIsPeriodOpen((value) => !value); setIsNotificationsOpen(false); setIsWalletOpen(false); }} aria-expanded={isPeriodOpen} className="liquid-button inline-flex h-11 items-center gap-2 rounded-full border-black/10 bg-white/72 px-3.5 text-[12px] font-medium text-[#242424] dark:text-white">
@@ -115,7 +118,7 @@ export function DashboardV2({ onAdd, onTransactions, onNavigate, language = "id"
             {isPeriodOpen && (
               <div className="glass-strong animate-card absolute right-0 top-12 z-30 w-44 rounded-[16px] p-1.5">
                 {["Agustus 2026", "September 2026", "Oktober 2026"].map((month) => (
-                  <button key={month} onClick={() => { setSelectedMonth(month); setIsPeriodOpen(false); }} className={cn("flex h-10 w-full items-center rounded-[10px] px-3 text-left text-[11px] transition-colors", selectedMonth === month ? "bg-slate-200 text-slate-900 dark:bg-white/12 dark:text-white" : "hover:bg-slate-100 dark:hover:bg-white/5")}>{month}</button>
+                  <button key={month} onClick={() => { setSelectedMonth(month); setIsPeriodOpen(false); }} className={cn("flex h-10 w-full items-center rounded-[10px] px-3 text-left text-[11px] transition-colors", selectedMonth === month ? "bg-slate-200 text-slate-900 dark:bg-white/12 dark:text-white" : "hover:bg-slate-100 dark:hover:bg-white/5")}>{isEnglish ? englishMonths[month] : month}</button>
                 ))}
               </div>
             )}
@@ -134,7 +137,7 @@ export function DashboardV2({ onAdd, onTransactions, onNavigate, language = "id"
                   : "liquid-button border-white/65 bg-white/54 text-[#5d5570] hover:text-blue-600 dark:text-[#ded7e8]",
               )}
             >
-              {item}
+              {isEnglish ? englishPeriods[item] : item}
             </button>
           ))}
         </div>
@@ -154,12 +157,12 @@ export function DashboardV2({ onAdd, onTransactions, onNavigate, language = "id"
 
             <div ref={walletRef} className="relative mt-4 w-fit">
               <button onClick={() => { setIsWalletOpen((value) => !value); setIsNotificationsOpen(false); setIsPeriodOpen(false); }} aria-expanded={isWalletOpen} className="liquid-button relative inline-flex h-9 items-center gap-2 rounded-full px-3 text-[11px] font-medium text-[#526176] dark:text-[#e4edf8]">
-                <WalletCards className="h-4 w-4" /> {selectedWallet?.name ?? (isEnglish ? "All wallets" : "Semua dompet")} <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isWalletOpen && "rotate-180")} />
+                <WalletCards className="h-4 w-4" /> {selectedWallet ? (isEnglish ? (englishDataLabels[selectedWallet.name] ?? selectedWallet.name) : selectedWallet.name) : (isEnglish ? "All wallets" : "Semua dompet")} <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isWalletOpen && "rotate-180")} />
               </button>
               {isWalletOpen && (
                 <div className="glass-strong animate-card absolute left-0 top-11 z-30 w-52 rounded-[16px] p-1.5">
                   {[{ id: "all", name: isEnglish ? "All wallets" : "Semua dompet" }, ...wallets].map((wallet) => (
-                    <button key={wallet.id} onClick={() => { setSelectedWalletId(wallet.id); setIsWalletOpen(false); }} className={cn("flex h-10 w-full items-center rounded-[10px] px-3 text-left text-[11px] transition-colors", selectedWalletId === wallet.id ? "bg-blue-600 text-white" : "hover:bg-blue-50 dark:hover:bg-white/5")}>{wallet.name}</button>
+                    <button key={wallet.id} onClick={() => { setSelectedWalletId(wallet.id); setIsWalletOpen(false); }} className={cn("flex h-10 w-full items-center rounded-[10px] px-3 text-left text-[11px] transition-colors", selectedWalletId === wallet.id ? "bg-blue-600 text-white" : "hover:bg-blue-50 dark:hover:bg-white/5")}>{isEnglish ? (englishDataLabels[wallet.name] ?? wallet.name) : wallet.name}</button>
                   ))}
                 </div>
               )}
@@ -177,7 +180,7 @@ export function DashboardV2({ onAdd, onTransactions, onNavigate, language = "id"
                 <h3 className="type-card-title">{isEnglish ? "Quick access" : "Akses cepat"}</h3>
                 <p className="type-caption mt-0.5 text-[#758398] dark:text-[#a7b6bd]">{isEnglish ? "Manage your money more easily" : "Kelola uangmu lebih praktis"}</p>
               </div>
-              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-medium text-slate-700 dark:bg-white/7 dark:text-slate-200">4 menu</span>
+              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-medium text-slate-700 dark:bg-white/7 dark:text-slate-200">{isEnglish ? "4 menus" : "4 menu"}</span>
             </div>
             <div className="mt-4 grid min-w-0 grid-cols-[repeat(4,minmax(0,1fr))] gap-1.5 sm:gap-2 lg:grid-cols-2">
               <QuickAction icon={Plus} label={isEnglish ? "Add" : "Tambah"} onClick={onAdd} primary delay="stagger-1" />
@@ -207,8 +210,8 @@ export function DashboardV2({ onAdd, onTransactions, onNavigate, language = "id"
                     {isIncome ? <ArrowDownLeft className="h-[18px] w-[18px]" /> : <ArrowUpRight className="h-[18px] w-[18px]" />}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-medium group-hover:text-black dark:group-hover:text-white">{transaction.title}</span>
-                    <span className="mt-0.5 block truncate text-[11px] text-[#77858d] dark:text-[#a7b6bd]">{category?.name ?? "Transaksi"} · {formatDate(transaction.transactionDate)}</span>
+                    <span className="block truncate text-[13px] font-medium group-hover:text-black dark:group-hover:text-white">{isEnglish ? (englishDataLabels[transaction.title] ?? transaction.title) : transaction.title}</span>
+                    <span className="mt-0.5 block truncate text-[11px] text-[#77858d] dark:text-[#a7b6bd]">{isEnglish ? (englishDataLabels[category?.name ?? ""] ?? "Transaction") : (category?.name ?? "Transaksi")} · {formatDate(transaction.transactionDate, language)}</span>
                   </span>
                   <span className={cn("money-value shrink-0 text-right text-[12px] font-semibold", isIncome ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>{isIncome ? "+" : "−"}{formatCurrency(transaction.amount)}</span>
                 </button>
