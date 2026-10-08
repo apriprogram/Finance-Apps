@@ -1,0 +1,51 @@
+NAMA PROYEK
+Catat Keuangan
+
+KATEGORI PROYEK
+Financial Technology (Fintech) / Personal Finance Management / Expense Tracker
+
+SHORT DESCRIPTION
+Aplikasi pencatatan keuangan pribadi yang responsif untuk mengelola pemasukan, pengeluaran, dompet, anggaran, tabungan, hutang, piutang, dan laporan keuangan dalam satu dashboard modern.
+
+DESKRIPSI LENGKAP
+Catat Keuangan adalah aplikasi manajemen finansial pribadi berbasis web yang membantu pengguna mencatat, memantau, dan menganalisis aktivitas keuangan secara praktis. Aplikasi menyediakan dashboard ringkasan saldo, pemasukan, pengeluaran, transaksi terbaru, dan akses cepat menuju fitur-fitur utama.
+
+Pengguna dapat mengelola beberapa dompet, membuat anggaran bulanan, menetapkan target tabungan, mencatat hutang atau piutang, menambahkan transaksi pemasukan dan pengeluaran, melihat laporan serta grafik, mengekspor data, dan menggunakan fitur pemindaian struk. Data aplikasi disimpan secara lokal pada browser sehingga dapat digunakan tanpa konfigurasi backend.
+
+Antarmuka dirancang dengan pendekatan mobile-first dan gaya liquid glass yang ringan. Tampilan mendukung mode terang dan gelap, layout responsif untuk mobile, tablet, serta desktop, animasi interaksi yang halus, navigasi bawah berbentuk rounded, dan warna status hijau untuk pemasukan serta merah untuk pengeluaran. Pengguna juga dapat mengganti nama, mengunggah foto profil, serta memilih bahasa Indonesia atau English. Preferensi dan data profil disimpan secara persisten di browser.
+
+FITUR UTAMA
+- Dashboard ringkasan keuangan
+- Pencatatan pemasukan dan pengeluaran
+- Pengelolaan beberapa dompet
+- Budget atau anggaran bulanan
+- Target tabungan
+- Pencatatan hutang dan piutang
+- Laporan, statistik, dan grafik keuangan
+- Daftar serta filter transaksi
+- Export data keuangan
+- Pemindaian struk OCR
+- Edit nama dan foto profil
+- Pilihan bahasa Indonesia dan English
+- Light mode dan dark mode
+- Penyimpanan data lokal yang persisten
+- Desain responsif untuk mobile, tablet, dan desktop
+- Animasi modal dan navigasi interaktif
+
+TECHNOLOGY STACK
+- Next.js 14.2
+- React 18.3
+- TypeScript 5.6
+- Tailwind CSS 3.4
+- Zustand 5 dengan persist middleware
+- Lucide React Icons
+- PostCSS
+- Local Storage
+- HTML5 FileReader API
+- Responsive Web Design
+
+META TITLE
+Catat Keuangan - Aplikasi Pengelola Keuangan Pribadi
+
+META DESCRIPTION
+Kelola pemasukan, pengeluaran, dompet, anggaran, tabungan, hutang, dan laporan keuangan dengan aplikasi Catat Keuangan yang modern dan responsif.

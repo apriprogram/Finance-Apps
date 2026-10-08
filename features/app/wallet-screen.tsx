@@ -25,10 +25,7 @@ export function WalletScreen() {
       <div className="animate-page h-full min-w-0 w-full overflow-x-hidden overflow-y-auto px-4 pb-28 pt-5 sm:px-6 md:px-8 md:pb-8 md:pt-7">
         <div className="mx-auto max-w-[1180px]">
           <header className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-slate-500 dark:text-[#a7b6bd]">Aset & akun</p>
-              <h1 className="mt-1 text-xl font-semibold tracking-[-0.025em] text-slate-900 dark:text-white md:text-2xl">Dompet saya</h1>
-            </div>
+            <h1 className="text-xl font-semibold tracking-[-0.025em] text-slate-900 dark:text-white md:text-2xl">Dompet saya</h1>
             <div ref={bookPickerRef} className="relative">
               <button onClick={() => setIsBookOpen((value) => !value)} aria-expanded={isBookOpen} className="glass-surface flex h-11 items-center gap-2 rounded-full px-4 text-[11px] font-medium text-[#40515b] dark:text-[#d8e8ec]">{selectedBook} <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isBookOpen && "rotate-180")} /></button>
               {isBookOpen && <div className="glass-strong animate-card absolute right-0 top-12 z-20 w-40 rounded-[15px] p-1.5">{["Semua buku", "Buku Utama"].map((book) => <button key={book} onClick={() => { setSelectedBook(book); setIsBookOpen(false); }} className={cn("flex h-10 w-full items-center rounded-[10px] px-3 text-left text-[11px]", selectedBook === book ? "bg-slate-200 text-slate-900 dark:bg-white/10 dark:text-white" : "hover:bg-blue-50 dark:hover:bg-white/5")}>{book}</button>)}</div>}
@@ -39,7 +36,7 @@ export function WalletScreen() {
             {tabs.map((tab) => {
               const isActive = activeTab === tab.toLowerCase();
               return (
-                <button key={tab} onClick={() => setActiveTab(tab.toLowerCase())} className={cn("h-10 shrink-0 rounded-full border px-5 text-[12px] font-medium transition-colors", isActive ? "border-slate-300 bg-slate-200 text-slate-800 dark:border-white/10 dark:bg-white/10 dark:text-white" : "border-slate-200 bg-white text-[#667489] hover:border-blue-200 hover:text-blue-600 dark:border-white/10 dark:bg-white/5 dark:text-[#aebbc1]")}>{tab}</button>
+                <button key={tab} onClick={() => setActiveTab(tab.toLowerCase())} className={cn("h-10 shrink-0 rounded-full border px-5 text-[12px] font-medium transition-colors", isActive ? "border-slate-800 bg-slate-800 text-white dark:border-white/15 dark:bg-slate-600 dark:text-white" : "border-slate-200 bg-white text-[#667489] hover:border-blue-200 hover:text-blue-600 dark:border-white/10 dark:bg-white/5 dark:text-[#aebbc1]")}>{tab}</button>
               );
             })}
           </div>

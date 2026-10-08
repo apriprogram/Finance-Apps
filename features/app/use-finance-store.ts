@@ -19,6 +19,7 @@ type FinanceState = {
   savingsGoals: SavingsGoal[];
   debts: Debt[];
   receiptScans: ReceiptScan[];
+  updateUser: (updates: Pick<User, "name" | "avatarUrl">) => void;
   addTransaction: (transaction: NewTransaction) => void;
   addWallet: (wallet: NewWallet) => void;
   addBudget: (categoryId: string, amount: number) => void;
@@ -43,6 +44,7 @@ export const useFinanceStore = create<FinanceState>()(
   persist(
     (set) => ({
       ...initialState,
+      updateUser: (updates) => set((state) => ({ user: { ...state.user, ...updates } })),
       addTransaction: (transaction) =>
         set((state) => {
           const newTransaction: Transaction = {

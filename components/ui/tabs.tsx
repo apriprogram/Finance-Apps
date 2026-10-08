@@ -23,7 +23,7 @@ export function Tabs<T extends string>({ items, value, onChange }: TabsProps<T>)
           onClick={() => onChange(item.value)}
           className={cn(
             "h-10 rounded-[11px] text-[12px] font-medium text-slate-500 transition-colors duration-200 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-300",
-            value === item.value && "border border-slate-200 bg-slate-200 font-semibold text-slate-800 dark:border-white/10 dark:bg-white/10 dark:text-white",
+            value === item.value && "border border-slate-800 bg-slate-800 font-semibold text-white dark:border-white/15 dark:bg-slate-600 dark:text-white",
           )}
         >
           {item.label}

@@ -12,6 +12,7 @@ import {
   BriefcaseBusiness,
   Bus,
   Camera,
+  CalendarDays,
   ChevronDown,
   CircleUserRound,
   Delete,
@@ -22,8 +23,10 @@ import {
   GraduationCap,
   HeartPulse,
   Home,
+  ImagePlus,
   LayoutGrid,
   Landmark,
+  Languages,
   Menu,
   Moon,
   MoreHorizontal,
@@ -32,6 +35,7 @@ import {
   Plus,
   ReceiptText,
   Search,
+  Save,
   Settings,
   ShoppingBag,
   SlidersHorizontal,
@@ -39,6 +43,7 @@ import {
   Sun,
   Target,
   Upload,
+  UserRound,
   Utensils,
   Wallet,
   WalletCards,
@@ -58,7 +63,8 @@ import { DashboardV2 } from "./dashboard-v2";
 import { WalletScreen } from "./wallet-screen";
 import type { TransactionType } from "@/types/finance";
 
-type View = "dashboard" | "transactions" | "budget" | "wallets" | "savings" | "debt" | "reports" | "export" | "receipt" | "settings";
+type View = "dashboard" | "transactions" | "budget" | "wallets" | "savings" | "debt" | "reports" | "export" | "receipt" | "settings" | "profile";
+type Language = "id" | "en";
 
 const navItems: { value: View; label: string; icon: typeof Home }[] = [
   { value: "dashboard", label: "Dashboard", icon: Home },
@@ -87,13 +93,28 @@ const iconMap: Record<string, any> = {
 export function FinanceApp() {
   const [view, setView] = useState<View>("dashboard");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [language, setLanguage] = useState<Language>("id");
+
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem("catat-keuangan-language") as Language | null;
+    if (savedLanguage === "id" || savedLanguage === "en") {
+      setLanguage(savedLanguage);
+      document.documentElement.lang = savedLanguage;
+    }
+  }, []);
+
+  function changeLanguage(nextLanguage: Language) {
+    setLanguage(nextLanguage);
+    localStorage.setItem("catat-keuangan-language", nextLanguage);
+    document.documentElement.lang = nextLanguage;
+  }
 
   return (
     <main className="app-gradient-bg flex h-[100dvh] w-full overflow-hidden text-slate-950 dark:text-slate-50">
       <div className="grid h-full min-w-0 w-full flex-1 overflow-hidden bg-transparent md:grid-cols-[248px_minmax(0,1fr)]">
-        <DesktopSidebar active={view} onChange={setView} />
+        <DesktopSidebar active={view} onChange={setView} language={language} />
         <section className="relative h-full min-h-0 min-w-0 overflow-hidden bg-transparent dark:bg-transparent">
-          {view === "dashboard" && <DashboardV2 onAdd={() => setIsAddModalOpen(true)} onTransactions={() => setView("transactions")} onNavigate={setView} />}
+          {view === "dashboard" && <DashboardV2 onAdd={() => setIsAddModalOpen(true)} onTransactions={() => setView("transactions")} onNavigate={setView} language={language} />}
           {view === "transactions" && <TransactionsScreen />}
           {view === "wallets" && <WalletScreen />}
           {view === "budget" && <BudgetScreen />}
@@ -102,8 +123,9 @@ export function FinanceApp() {
           {view === "reports" && <ReportsScreen />}
           {view === "export" && <ExportScreen />}
           {view === "receipt" && <ReceiptScreen />}
-          {view === "settings" && <SettingsScreen onNavigate={setView} />}
-          <MobileNav active={view} onChange={setView} onAdd={() => setIsAddModalOpen(true)} />
+          {view === "settings" && <SettingsScreen onNavigate={setView} language={language} onLanguageChange={changeLanguage} />}
+          {view === "profile" && <ProfileScreen language={language} onBack={() => setView("settings")} />}
+          <MobileNav active={view} onChange={setView} onAdd={() => setIsAddModalOpen(true)} language={language} />
           <AddDataModal open={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
         </section>
       </div>
@@ -137,6 +159,7 @@ function ThemeToggle() {
 }
 
 function ScreenShell({ children, title, action, compactTitle = false, avatarLabel }: { children: ReactNode; title: string; action?: ReactNode; hideMenu?: boolean; compactTitle?: boolean; avatarLabel?: string }) {
+  const { user } = useFinanceStore();
   return (
     <div className="animate-page mx-auto h-full w-full max-w-[1180px] overflow-y-auto px-4 pb-28 pt-5 sm:px-6 md:px-8 md:py-7">
       <header className="mb-5 flex items-center justify-between gap-3 sm:mb-6">
@@ -144,7 +167,7 @@ function ScreenShell({ children, title, action, compactTitle = false, avatarLabe
           <h1 className={cn(compactTitle ? "text-lg font-medium tracking-[-0.025em] md:text-xl" : "text-xl font-semibold tracking-[-0.035em] md:text-2xl", "text-slate-900 dark:text-slate-50")}>{title}</h1>
         </div>
         <div className="flex items-center gap-2 text-slate-700 [&_button]:text-slate-700 [&_button:hover]:bg-slate-100 [&_button:hover]:text-blue-600 dark:text-white dark:[&_button]:text-white dark:[&_button:hover]:bg-white/10 dark:[&_button:hover]:text-blue-300">
-          {avatarLabel ? <><ThemeToggle /><img src="/images/profile-andi.png" alt={`Foto profil ${avatarLabel}`} className="h-10 w-10 rounded-full object-cover" /></> : <><ThemeToggle />{action}</>}
+          {avatarLabel ? <><ThemeToggle /><img src={user.avatarUrl || "/images/profile-andi.png"} alt={`Foto profil ${avatarLabel}`} className="h-10 w-10 rounded-full object-cover" /></> : <><ThemeToggle />{action}</>}
         </div>
       </header>
       {children}
@@ -364,8 +387,8 @@ function ModalTransactionTypeTabs({ value, onChange, items }: { value: Transacti
             className={cn(
               "h-11 rounded-full text-xs font-medium outline outline-1 outline-transparent transition-colors duration-200",
               isActive
-                ? "bg-white text-cyan-700 dark:bg-cyan-700 dark:text-white dark:outline-cyan-400/30"
-                : "text-slate-500 hover:bg-white/50 hover:text-slate-900 dark:text-cyan-200/85 dark:hover:bg-cyan-400/10 dark:hover:text-white",
+                ? "bg-slate-800 text-white outline-slate-900/5 dark:bg-slate-600 dark:text-white dark:outline-white/10"
+                : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white",
             )}
           >
             {item.label}
@@ -377,7 +400,7 @@ function ModalTransactionTypeTabs({ value, onChange, items }: { value: Transacti
 }
 function TransactionTypeTabs({ value, onChange, items }: { value: TransactionType; onChange: (value: TransactionType) => void; items: { value: TransactionType; label: string }[] }) {
   return (
-    <div className="grid grid-cols-3 gap-1 rounded-full border border-slate-900/5 bg-slate-950/90 p-1.5 backdrop-blur-2xl dark:border-cyan-400/20 dark:bg-cyan-950/20">
+    <div className="grid grid-cols-3 gap-1 rounded-full border border-slate-200 bg-slate-100/80 p-1.5 backdrop-blur-2xl dark:border-white/10 dark:bg-white/5">
       {items.map((item) => {
         const isActive = item.value === value;
         return (
@@ -387,8 +410,8 @@ function TransactionTypeTabs({ value, onChange, items }: { value: TransactionTyp
             className={cn(
               "h-9 rounded-full text-xs font-medium outline outline-1 outline-transparent transition-colors duration-200",
               isActive
-                ? "bg-[#303030] text-white outline-white/5 dark:bg-cyan-600 dark:text-white dark:outline-cyan-300/30"
-                : "text-cyan-100/90 hover:bg-white/8 hover:text-white dark:text-cyan-200/85 dark:hover:bg-cyan-400/10 dark:hover:text-white",
+                ? "bg-slate-800 text-white outline-slate-900/5 dark:bg-slate-600 dark:text-white dark:outline-white/10"
+                : "text-slate-500 hover:bg-white/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white",
             )}
           >
             {item.label}
@@ -411,7 +434,7 @@ function TransactionPillTabs({ value, onChange, items }: { value: TransactionTyp
               className={cn(
                 "h-10 rounded-full px-5 text-[13px] font-medium outline outline-1 outline-transparent transition-colors duration-200",
                 isActive
-                  ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                  ? "bg-slate-800 text-white dark:bg-slate-600 dark:text-white"
                   : "bg-white/50 text-slate-700 backdrop-blur-xl hover:bg-white/75 dark:bg-white/10 dark:text-slate-200",
               )}
             >
@@ -824,20 +847,35 @@ function ReceiptScreen() {
   );
 }
 
-function SettingsScreen({ onNavigate }: { onNavigate: (view: View) => void }) {
-  const { resetLocalDatabase } = useFinanceStore();
+function SettingsScreen({ onNavigate, language, onLanguageChange }: { onNavigate: (view: View) => void; language: Language; onLanguageChange: (language: Language) => void }) {
+  const { resetLocalDatabase, user } = useFinanceStore();
+  const isEnglish = language === "en";
   const routes: { view: View; label: string; icon: typeof Wallet }[] = [
-    { view: "budget", label: "Budget Bulanan", icon: PieChartIcon },
-    { view: "savings", label: "Tabungan", icon: Target },
-    { view: "debt", label: "Hutang / Piutang", icon: Landmark },
-    { view: "reports", label: "Laporan & Grafik", icon: PieChartIcon },
+    { view: "budget", label: isEnglish ? "Monthly Budget" : "Budget Bulanan", icon: PieChartIcon },
+    { view: "savings", label: isEnglish ? "Savings" : "Tabungan", icon: Target },
+    { view: "debt", label: isEnglish ? "Debt / Receivables" : "Hutang / Piutang", icon: Landmark },
+    { view: "reports", label: isEnglish ? "Reports & Charts" : "Laporan & Grafik", icon: PieChartIcon },
     { view: "export", label: "Export Data", icon: FileSpreadsheet },
-    { view: "receipt", label: "Scan Struk OCR", icon: Camera },
+    { view: "receipt", label: isEnglish ? "Scan Receipt OCR" : "Scan Struk OCR", icon: Camera },
   ];
 
   return (
-    <ScreenShell title="Lainnya">
+    <ScreenShell title={isEnglish ? "More" : "Lainnya"}>
       <div className="grid gap-3">
+        <button onClick={() => onNavigate("profile")} className="glass-surface flex items-center gap-3 rounded-[20px] p-3 text-left transition-colors duration-200 hover:bg-white/72 dark:hover:bg-white/8">
+          <img src={user.avatarUrl || "/images/profile-andi.png"} alt={user.name} className="h-12 w-12 rounded-full object-cover" />
+          <span className="min-w-0 flex-1"><span className="block truncate text-[13px] font-semibold">{user.name}</span><span className="mt-0.5 block text-[11px] text-slate-500">{isEnglish ? "Edit name and profile photo" : "Edit nama dan foto profil"}</span></span>
+          <UserRound className="h-[18px] w-[18px] text-slate-400" />
+        </button>
+        <Card>
+          <div className="mb-3 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-white"><Languages className="h-[18px] w-[18px]" /></div>
+            <div><div className="text-[13px] font-semibold">{isEnglish ? "Language" : "Bahasa"}</div><div className="text-[11px] text-slate-500">{isEnglish ? "Choose the application language" : "Pilih bahasa aplikasi"}</div></div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 rounded-full bg-slate-100/80 p-1 dark:bg-white/5">
+            {(["id", "en"] as Language[]).map((item) => <button key={item} onClick={() => onLanguageChange(item)} className={cn("h-10 rounded-full text-[11px] font-medium transition-colors", language === item ? "bg-slate-300/90 text-slate-900 dark:bg-white/15 dark:text-white" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white")}>{item === "id" ? "Indonesia" : "English"}</button>)}
+          </div>
+        </Card>
         {routes.map((route) => (
           <button key={route.view} onClick={() => onNavigate(route.view)} className="glass-surface flex items-center gap-3 rounded-[20px] p-3 text-left transition-colors duration-200 hover:bg-white/72 dark:hover:bg-white/8">
             <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-200">
@@ -852,8 +890,8 @@ function SettingsScreen({ onNavigate }: { onNavigate: (view: View) => void }) {
               <WalletCards className="h-[18px] w-[18px]" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-semibold">Database Lokal</div>
-              <div className="text-[11px] text-slate-500">Aktif di browser untuk mode localhost</div>
+              <div className="text-[13px] font-semibold">{isEnglish ? "Local Database" : "Database Lokal"}</div>
+              <div className="text-[11px] text-slate-500">{isEnglish ? "Active in this browser" : "Aktif di browser untuk mode localhost"}</div>
             </div>
             <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-600">Online</span>
           </div>
@@ -864,13 +902,56 @@ function SettingsScreen({ onNavigate }: { onNavigate: (view: View) => void }) {
               <Settings className="h-[18px] w-[18px]" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-semibold">Pengaturan Aplikasi</div>
-              <div className="text-[11px] text-slate-500">Profil, keamanan, dan preferensi</div>
+              <div className="text-[13px] font-semibold">{isEnglish ? "Application Settings" : "Pengaturan Aplikasi"}</div>
+              <div className="text-[11px] text-slate-500">{isEnglish ? "Profile, security, and preferences" : "Profil, keamanan, dan preferensi"}</div>
             </div>
           </div>
-          <Button className="mt-4 w-full" variant="secondary" onClick={resetLocalDatabase}>Reset Data Lokal</Button>
+          <Button className="mt-4 w-full" variant="secondary" onClick={resetLocalDatabase}>{isEnglish ? "Reset Local Data" : "Reset Data Lokal"}</Button>
         </Card>
       </div>
+    </ScreenShell>
+  );
+}
+
+function ProfileScreen({ language, onBack }: { language: Language; onBack: () => void }) {
+  const { user, updateUser } = useFinanceStore();
+  const [name, setName] = useState(user.name);
+  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || "/images/profile-andi.png");
+  const [saved, setSaved] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isEnglish = language === "en";
+
+  function selectPhoto(file?: File) {
+    if (!file || !file.type.startsWith("image/") || file.size > 2_000_000) return;
+    const reader = new FileReader();
+    reader.onload = () => typeof reader.result === "string" && setAvatarUrl(reader.result);
+    reader.readAsDataURL(file);
+  }
+
+  function saveProfile() {
+    const cleanName = name.trim();
+    if (!cleanName) return;
+    updateUser({ name: cleanName, avatarUrl });
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 1800);
+  }
+
+  return (
+    <ScreenShell title={isEnglish ? "Profile" : "Profil"} action={<button onClick={onBack} className="liquid-button h-10 rounded-full px-4 text-[11px] font-medium">{isEnglish ? "Back" : "Kembali"}</button>}>
+      <Card className="text-center">
+        <div className="relative mx-auto w-fit">
+          <img src={avatarUrl} alt={user.name} className="h-28 w-28 rounded-full object-cover" />
+          <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white transition-transform active:scale-95 dark:bg-white dark:text-slate-900" aria-label={isEnglish ? "Change profile photo" : "Ganti foto profil"}><ImagePlus className="h-[18px] w-[18px]" /></button>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(event) => selectPhoto(event.target.files?.[0])} />
+        </div>
+        <p className="mt-3 text-[11px] text-slate-500">{isEnglish ? "JPG or PNG, maximum 2 MB" : "JPG atau PNG, maksimal 2 MB"}</p>
+      </Card>
+      <Card className="mt-3">
+        <label className="block text-[11px] font-medium text-slate-500">{isEnglish ? "Full name" : "Nama lengkap"}</label>
+        <input value={name} maxLength={40} onChange={(event) => setName(event.target.value)} className="mt-2 h-12 w-full rounded-[15px] border border-slate-200 bg-white/70 px-4 text-[13px] font-medium outline-none transition-colors focus:border-slate-400 dark:border-white/10 dark:bg-white/5" />
+        <div className="mt-3 rounded-[15px] bg-slate-100/70 px-4 py-3 text-left dark:bg-white/5"><p className="text-[10px] text-slate-500">Email</p><p className="mt-1 text-[12px] font-medium">{user.email}</p></div>
+        <Button onClick={saveProfile} disabled={!name.trim()} className="mt-4 w-full"><Save className="h-4 w-4" />{saved ? (isEnglish ? "Saved" : "Tersimpan") : (isEnglish ? "Save Changes" : "Simpan Perubahan")}</Button>
+      </Card>
     </ScreenShell>
   );
 }
@@ -1032,6 +1113,7 @@ function AddDataModal({ open, onClose }: { open: boolean; onClose: () => void })
   const [note, setNote] = useState("");
   const [transactionDate, setTransactionDate] = useState(new Date().toISOString().slice(0, 10));
   const [isWalletPickerOpen, setIsWalletPickerOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const walletPickerRef = useRef<HTMLDivElement>(null);
   const closeWalletPicker = useCallback(() => setIsWalletPickerOpen(false), []);
   useClickOutside(walletPickerRef, isWalletPickerOpen, closeWalletPicker);
@@ -1046,7 +1128,9 @@ function AddDataModal({ open, onClose }: { open: boolean; onClose: () => void })
 
   // Handle closing modal
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      setIsClosing(false);
+    } else {
       setAmount("");
       setNote("");
       setIsWalletPickerOpen(false);
@@ -1054,6 +1138,10 @@ function AddDataModal({ open, onClose }: { open: boolean; onClose: () => void })
   }, [open]);
 
   if (!open) return null;
+
+  function requestClose() {
+    if (!isClosing) setIsClosing(true);
+  }
 
   function submit() {
     const parsedAmount = Number(amount);
@@ -1069,7 +1157,7 @@ function AddDataModal({ open, onClose }: { open: boolean; onClose: () => void })
     });
     setAmount("");
     setNote("");
-    onClose();
+    requestClose();
   }
 
   function handleNumpad(key: string) {
@@ -1084,13 +1172,33 @@ function AddDataModal({ open, onClose }: { open: boolean; onClose: () => void })
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/58 p-0">
-      <div className="animate-sheet flex h-auto max-h-[calc(100dvh-56px)] w-full max-w-xl flex-col overflow-hidden rounded-t-[30px] border border-b-0 border-black/10 bg-[#f7f7f7] text-[#201a2b] dark:border-white/10 dark:bg-[#111214] dark:text-[#f5f1fb] sm:max-h-[calc(100dvh-72px)]">
+    <div
+      className={cn("fixed inset-0 z-50 flex items-end justify-center bg-black/[0.68] p-0", isClosing ? "animate-overlay-out" : "animate-overlay-in")}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) requestClose();
+      }}
+    >
+      <div
+        className={cn("flex h-auto max-h-[calc(100dvh-56px)] w-full max-w-xl flex-col overflow-hidden rounded-t-[30px] border border-b-0 border-black/10 bg-[#f7f7f7] text-[#201a2b] dark:border-white/10 dark:bg-[#111214] dark:text-[#f5f1fb] sm:max-h-[calc(100dvh-72px)]", isClosing ? "animate-sheet-out" : "animate-sheet")}
+        onAnimationEnd={() => {
+          if (isClosing) onClose();
+        }}
+      >
         <header className="flex min-h-[72px] items-center justify-between border-b border-black/8 bg-white px-4 dark:border-white/7 dark:bg-[#151619]">
-          <button onClick={onClose} className="liquid-button flex h-10 w-10 items-center justify-center rounded-full" aria-label="Tutup transaksi"><ArrowLeft className="h-[18px] w-[18px]" /></button>
+          <button onClick={requestClose} className="liquid-button flex h-10 w-10 items-center justify-center rounded-full" aria-label="Tutup transaksi"><ArrowLeft className="h-[18px] w-[18px]" /></button>
           <div className="text-center">
             <p className="text-[12px] font-semibold">Tambah transaksi</p>
-            <input type="date" value={transactionDate} onChange={(event) => setTransactionDate(event.target.value)} className="mt-1 h-8 rounded-full border border-black/10 bg-slate-100 px-3 text-[10px] font-medium text-slate-700 outline-none transition-colors hover:bg-slate-200 focus:border-black dark:border-white/10 dark:bg-white/7 dark:text-slate-200" />
+            <div className="relative mt-1.5 flex h-9 items-center rounded-full border border-black/10 bg-slate-100/90 px-2 transition-colors hover:bg-slate-200/90 focus-within:border-slate-400 dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15">
+              <CalendarDays className="pointer-events-none absolute left-3 h-3.5 w-3.5 text-slate-500 dark:text-slate-300" />
+              <input
+                type="date"
+                value={transactionDate}
+                onChange={(event) => setTransactionDate(event.target.value)}
+                onClick={(event) => event.currentTarget.showPicker?.()}
+                aria-label="Tanggal transaksi"
+                className="h-full w-[142px] cursor-pointer bg-transparent pl-7 pr-1 text-center text-[11px] font-medium text-slate-700 outline-none dark:text-slate-100"
+              />
+            </div>
           </div>
           <span className="h-10 w-10" aria-hidden="true" />
         </header>
@@ -1149,26 +1257,38 @@ function AddDataModal({ open, onClose }: { open: boolean; onClose: () => void })
   );
 }
 
-function MobileNav({ active, onChange, onAdd }: { active: View; onChange: (view: View) => void; onAdd: () => void }) {
+function MobileNav({ active, onChange, onAdd, language }: { active: View; onChange: (view: View) => void; onAdd: () => void; language: Language }) {
+  const isEnglish = language === "en";
   const mobileItems: { value: View; label: string; icon: typeof Home }[] = [
     { value: "dashboard", label: "Home", icon: Home },
-    { value: "wallets", label: "Dompet", icon: Wallet },
-    { value: "reports", label: "Laporan", icon: PieChartIcon },
-    { value: "settings", label: "Pengaturan", icon: Settings },
+    { value: "wallets", label: isEnglish ? "Wallets" : "Dompet", icon: Wallet },
+    { value: "reports", label: isEnglish ? "Reports" : "Laporan", icon: PieChartIcon },
+    { value: "settings", label: isEnglish ? "Settings" : "Pengaturan", icon: Settings },
   ];
+  const navigationActive = active === "profile" ? "settings" : active;
+  const activeItemIndex = mobileItems.findIndex((item) => item.value === navigationActive);
+  const activeGridColumn = activeItemIndex < 0 ? 0 : activeItemIndex < 2 ? activeItemIndex : activeItemIndex + 1;
 
   return (
     <nav className="pointer-events-none absolute bottom-[max(20px,env(safe-area-inset-bottom))] left-1/2 z-30 -translate-x-1/2 md:hidden">
-      <div className="menu-shadow pointer-events-auto grid h-[72px] w-[calc(100vw-24px)] max-w-[420px] grid-cols-5 items-center rounded-full border border-white/90 bg-white/82 px-2 text-black backdrop-blur-[32px] backdrop-saturate-150 dark:border-white/10 dark:bg-[#17181a]/92 dark:text-white">
+      <div className="menu-shadow pointer-events-auto relative grid h-[72px] w-[calc(100vw-24px)] max-w-[420px] grid-cols-5 items-center rounded-full border border-white/55 bg-white/58 px-2 text-black backdrop-blur-[26px] backdrop-saturate-150 dark:border-white/8 dark:bg-[#17181a]/62 dark:text-white">
+        <span
+          aria-hidden="true"
+          className={cn(
+            "pointer-events-none absolute left-2 top-[6px] h-[58px] w-[calc((100%-16px)/5)] rounded-full border border-slate-300 bg-slate-200/80 backdrop-blur-xl transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] dark:border-white/10 dark:bg-white/10",
+            activeItemIndex < 0 ? "opacity-0" : "opacity-100",
+          )}
+          style={{ transform: `translate3d(${activeGridColumn * 100}%, 0, 0)` }}
+        />
         {mobileItems.slice(0, 2).map((item) => (
-          <MobileNavButton key={item.value} item={item} active={active} onChange={onChange} />
+          <MobileNavButton key={item.value} item={item} active={navigationActive} onChange={onChange} />
         ))}
         <button onClick={onAdd} aria-label="Tambah data" className="relative flex h-[72px] min-w-0 -translate-y-4 items-center justify-center rounded-full transition-transform active:scale-95">
           <span className="flex h-[58px] w-[58px] items-center justify-center rounded-full bg-black text-white dark:bg-white dark:text-black"><Plus className="h-7 w-7 stroke-[1.8]" /></span>
           <span className="sr-only">Tambah</span>
         </button>
         {mobileItems.slice(2).map((item) => (
-          <MobileNavButton key={item.value} item={item} active={active} onChange={onChange} />
+          <MobileNavButton key={item.value} item={item} active={navigationActive} onChange={onChange} />
         ))}
       </div>
     </nav>
@@ -1182,25 +1302,28 @@ function MobileNavButton({ item, active, onChange }: { item: { value: View; labe
       onClick={() => onChange(item.value)}
       aria-label={item.label}
       className={cn(
-        "flex h-[58px] min-w-0 flex-col items-center justify-center gap-1 rounded-full border transition-colors duration-200",
-        isActive ? "border-slate-600/30 bg-slate-700/85 text-white backdrop-blur-xl dark:border-white/15 dark:bg-slate-500/28 dark:text-white" : "border-transparent text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-white/55 dark:hover:bg-white/5 dark:hover:text-white/80",
+        "relative z-10 flex h-[58px] min-w-0 flex-col items-center justify-center gap-0.5 rounded-full border border-transparent bg-transparent transition-[color,transform] duration-300 ease-out active:scale-95",
+        isActive ? "scale-[1.03] text-slate-900 dark:text-white" : "scale-100 text-slate-400 hover:text-slate-700 dark:text-white/55 dark:hover:text-white/80",
       )}
     >
-      <item.icon className={cn("h-[19px] w-[19px] shrink-0", isActive ? "stroke-[2.5]" : "stroke-[1.9]")} />
-      <span className="max-w-full truncate text-[10px] font-medium leading-none">{item.label}</span>
+      <span className={cn("flex h-7 w-7 items-center justify-center rounded-full bg-transparent transition-[color,transform] duration-300", isActive ? "-translate-y-0.5 text-slate-900 dark:text-white" : "translate-y-0 text-inherit")}>
+        <item.icon className={cn("h-[17px] w-[17px] shrink-0", isActive ? "stroke-[2.4]" : "stroke-[1.9]")} />
+      </span>
+      <span className={cn("max-w-full truncate text-[9px] leading-none", isActive ? "font-semibold text-slate-900 dark:text-white" : "font-medium")}>{item.label}</span>
     </button>
   );
 }
-function DesktopSidebar({ active, onChange }: { active: View; onChange: (view: View) => void }) {
+function DesktopSidebar({ active, onChange, language }: { active: View; onChange: (view: View) => void; language: Language }) {
+  const isEnglish = language === "en";
   const items: { value: View; label: string; icon: typeof Home }[] = [
     { value: "dashboard", label: "Dashboard", icon: Home },
-    { value: "transactions", label: "Transaksi", icon: ReceiptText },
-    { value: "wallets", label: "Dompet", icon: Wallet },
-    { value: "savings", label: "Tabungan", icon: Target },
-    { value: "debt", label: "Hutang / Piutang", icon: Landmark },
-    { value: "reports", label: "Laporan", icon: PieChartIcon },
+    { value: "transactions", label: isEnglish ? "Transactions" : "Transaksi", icon: ReceiptText },
+    { value: "wallets", label: isEnglish ? "Wallets" : "Dompet", icon: Wallet },
+    { value: "savings", label: isEnglish ? "Savings" : "Tabungan", icon: Target },
+    { value: "debt", label: isEnglish ? "Debt / Receivables" : "Hutang / Piutang", icon: Landmark },
+    { value: "reports", label: isEnglish ? "Reports" : "Laporan", icon: PieChartIcon },
     { value: "export", label: "Export", icon: FileSpreadsheet },
-    { value: "receipt", label: "Scan Struk", icon: Camera },
+    { value: "receipt", label: isEnglish ? "Scan Receipt" : "Scan Struk", icon: Camera },
   ];
 
   return (

@@ -8,6 +8,7 @@ export type User = {
   name: string;
   email: string;
   currency: "IDR";
+  avatarUrl?: string;
 };
 
 export type Wallet = {
